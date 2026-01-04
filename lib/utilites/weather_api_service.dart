@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:convert';
+import '../models/weather_response_model.dart';
 
 final apiKey = dotenv.env['weatherAPI'];
 String city = "Manama";
@@ -22,7 +23,7 @@ class WeatherApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getCurrentWeather(
+  Future<weather_response_model> getCurrentWeather(
     String city,
     bool airQuality,
   ) async {
@@ -47,9 +48,10 @@ class WeatherApiService {
       final response = await client.get(uri);
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        return weather_response_model.fromJson(data);
       } else if (response.statusCode == 400) {
-        final errorData = json.decode(response.body);
+        final errorData = jsonDecode(response.body);
         final errorMessage = errorData['error']['message'] ?? 'City not found';
         throw Exception(errorMessage);
       } else if (response.statusCode == 401 || response.statusCode == 403) {
@@ -61,7 +63,7 @@ class WeatherApiService {
       }
     } catch (e) {
       if (e is Exception) rethrow;
-      throw Exception("CHECK YOUR NETWORK IDIOT !");
+      throw Exception("CHECK YOUR NETWORK!");
     }
   }
 }
