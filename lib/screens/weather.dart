@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:convert'; //for decoding and encoding JSON 
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../utilites/weather_api_service.dart';
 import '../models/weather_response_model.dart';
+import '../widgets/weather_list.dart';
 //Load configuration at runtime from a .env file which can be
 // used throughout the application.
 
@@ -31,10 +29,9 @@ class _WeatherPageState extends State<Weather> {
 
       setState(() {
         weatherData = data;
-      }); //change it later to state management
+      }); 
     } catch (e) {
-      print('Error loading weather data: $e');
-      // You can also show an error message to the user here
+      // Handle error silently or show user-friendly message
     }
   }
 
@@ -42,12 +39,16 @@ class _WeatherPageState extends State<Weather> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Hello, Weather!'),
-            Text(weatherData != null
-                ? 'Temperature: ${weatherData!.current.temp_c}°C'
-                : 'Loading...'),
+            const Text('Weather', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+
+            if (weatherData != null) 
+             const WeatherList()
+            else 
+             const CircularProgressIndicator(),
           ],
         ),
       ),
