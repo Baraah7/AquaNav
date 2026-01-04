@@ -1,0 +1,378 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "project",
+            "cwd": "project",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "FirstProject",
+            "cwd": "AndroidStudioProjects\\FirstProject",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "FirstProject (profile mode)",
+            "cwd": "AndroidStudioProjects\\FirstProject",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "FirstProject (release mode)",
+            "cwd": "AndroidStudioProjects\\FirstProject",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "my_flutter_project",
+            "cwd": "FlutterSDK\\my_flutter_project",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "my_flutter_project (profile mode)",
+            "cwd": "FlutterSDK\\my_flutter_project",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "my_flutter_project (release mode)",
+            "cwd": "FlutterSDK\\my_flutter_project",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "src",
+            "cwd": "FlutterSDK\\src",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "src (profile mode)",
+            "cwd": "FlutterSDK\\src",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "src (release mode)",
+            "cwd": "FlutterSDK\\src",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "$R58S1F0",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R58S1F0",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "$R58S1F0 (profile mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R58S1F0",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "$R58S1F0 (release mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R58S1F0",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "$RCBH505",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RCBH505",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "$RCBH505 (profile mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RCBH505",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "$RCBH505 (release mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RCBH505",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "$RDURJ47",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RDURJ47",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "$RDURJ47 (profile mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RDURJ47",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "$RDURJ47 (release mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RDURJ47",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "$RIMK9YL",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RIMK9YL",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "$ROQ5K6Q",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$ROQ5K6Q",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "$ROQ5K6Q (profile mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$ROQ5K6Q",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "$ROQ5K6Q (release mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$ROQ5K6Q",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "flutter",
+            "cwd": "FlutterSDK\\src\\flutter",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "fortune_cookie",
+            "cwd": "Users\\Dell\\fortune_cookie",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "fortune_cookie (profile mode)",
+            "cwd": "Users\\Dell\\fortune_cookie",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "fortune_cookie (release mode)",
+            "cwd": "Users\\Dell\\fortune_cookie",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "project",
+            "cwd": "Users\\maymo\\project",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "counter_provider",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R7JYS6U\\counter_provider",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "counter_provider (profile mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R7JYS6U\\counter_provider",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "counter_provider (release mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R7JYS6U\\counter_provider",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "fortune_cookie",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R7JYS6U\\fortune_cookie",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "fortune_cookie (profile mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R7JYS6U\\fortune_cookie",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "fortune_cookie (release mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R7JYS6U\\fortune_cookie",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "tip_calculator",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R7JYS6U\\tip_calculator",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "tip_calculator (profile mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R7JYS6U\\tip_calculator",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "tip_calculator (release mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$R7JYS6U\\tip_calculator",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "fortune_cookie",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RHID3DU\\fortune_cookie",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "fortune_cookie (profile mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RHID3DU\\fortune_cookie",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "fortune_cookie (release mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RHID3DU\\fortune_cookie",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "my_flutter_project",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RL7LWVM\\my_flutter_project",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "my_flutter_project (profile mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RL7LWVM\\my_flutter_project",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "my_flutter_project (release mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RL7LWVM\\my_flutter_project",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "src",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RL7LWVM\\src",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "src (profile mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RL7LWVM\\src",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "src (release mode)",
+            "cwd": "$Recycle.Bin\\S-1-5-21-262308841-3209714328-2801617431-1001\\$RL7LWVM\\src",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "sdk_library_metadata",
+            "cwd": "dart-sdk\\lib\\_internal\\sdk_library_metadata",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "flutter_mid",
+            "cwd": "Users\\Dell\\AndroidStudioProjects\\flutter_mid",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "flutter_mid (profile mode)",
+            "cwd": "Users\\Dell\\AndroidStudioProjects\\flutter_mid",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "flutter_mid (release mode)",
+            "cwd": "Users\\Dell\\AndroidStudioProjects\\flutter_mid",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "itcs444",
+            "cwd": "Users\\Dell\\AndroidStudioProjects\\itcs444",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "itcs444 (profile mode)",
+            "cwd": "Users\\Dell\\AndroidStudioProjects\\itcs444",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "itcs444 (release mode)",
+            "cwd": "Users\\Dell\\AndroidStudioProjects\\itcs444",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "TestProject",
+            "cwd": "Users\\Dell\\AndroidStudioProjects\\TestProject",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "TestProject (profile mode)",
+            "cwd": "Users\\Dell\\AndroidStudioProjects\\TestProject",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "TestProject (release mode)",
+            "cwd": "Users\\Dell\\AndroidStudioProjects\\TestProject",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}
