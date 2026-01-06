@@ -66,39 +66,65 @@ class current_weather_model {
   });
 
   factory current_weather_model.fromJson(Map<String, dynamic> json) {
-    return current_weather_model(
-      last_updated_epoch: json['last_updated_epoch'] as int,
-      last_updated: json['last_updated'] as String,
-      temp_c: (json['temp_c'] as num).toDouble(),
-      temp_f: (json['temp_f'] as num).toDouble(),
-      is_day: json['is_day'] as int,
-      condition: condition_model.fromJson(json['condition']),
-      wind_mph: (json['wind_mph'] as num).toDouble(),
-      wind_kph: (json['wind_kph'] as num).toDouble(),
-      wind_degree: json['wind_degree'] as int,
-      wind_dir: json['wind_dir'] as String,
-      pressure_mb: (json['pressure_mb'] as num).toDouble(),
-      pressure_in: (json['pressure_in'] as num).toDouble(),
-      humidity: (json['humidity'] as num).toDouble(),
-      cloud: (json['cloud'] as num).toDouble(),
-      feelslike_c: (json['feelslike_c'] as num).toDouble(),
-      feelslike_f: (json['feelslike_f'] as num).toDouble(),
-      windchill_c: (json['windchill_c'] as num).toDouble(),
-      windchill_f: (json['windchill_f'] as num).toDouble(),
-      heatindex_c: (json['heatindex_c'] as num).toDouble(),
-      heatindex_f: (json['heatindex_f'] as num).toDouble(),
-      dewpoint_c: (json['dewpoint_c'] as num).toDouble(),
-      dewpoint_f: (json['dewpoint_f'] as num).toDouble(),
-      vis_km: (json['vis_km'] as num).toDouble(),
-      vis_miles: (json['vis_miles'] as num).toDouble(),
-      uv: (json['uv'] as num).toDouble(),
-      gust_mph: (json['gust_mph'] as num).toDouble(),
-      gust_kph: (json['gust_kph'] as num).toDouble(),
-      short_rad: (json['short_rad'] as num).toDouble(),
-      diff_rad: (json['diff_rad'] as num).toDouble(),
-      dni: (json['dni'] as num).toDouble(),
-      gti: (json['gti'] as num).toDouble(),
-    );
+    try {
+      print('Parsing current_weather_model with keys: ${json.keys.toList()}');
+
+      // Check critical fields
+      final missingFields = <String>[];
+      if (json['last_updated_epoch'] == null) missingFields.add('last_updated_epoch');
+      if (json['last_updated'] == null) missingFields.add('last_updated');
+      if (json['temp_c'] == null) missingFields.add('temp_c');
+      if (json['temp_f'] == null) missingFields.add('temp_f');
+      if (json['is_day'] == null) missingFields.add('is_day');
+      if (json['condition'] == null) missingFields.add('condition');
+
+      if (missingFields.isNotEmpty) {
+        throw Exception('Missing required fields in current weather: ${missingFields.join(", ")}');
+      }
+
+      print('Parsing condition...');
+      final condition = condition_model.fromJson(json['condition']);
+      print('Condition parsed: ${condition.text}');
+
+      return current_weather_model(
+        last_updated_epoch: json['last_updated_epoch'] as int,
+        last_updated: json['last_updated'] as String,
+        temp_c: (json['temp_c'] as num).toDouble(),
+        temp_f: (json['temp_f'] as num).toDouble(),
+        is_day: json['is_day'] as int,
+        condition: condition,
+        wind_mph: (json['wind_mph'] as num).toDouble(),
+        wind_kph: (json['wind_kph'] as num).toDouble(),
+        wind_degree: json['wind_degree'] as int,
+        wind_dir: json['wind_dir'] as String,
+        pressure_mb: (json['pressure_mb'] as num).toDouble(),
+        pressure_in: (json['pressure_in'] as num).toDouble(),
+        humidity: (json['humidity'] as num).toDouble(),
+        cloud: (json['cloud'] as num).toDouble(),
+        feelslike_c: (json['feelslike_c'] as num).toDouble(),
+        feelslike_f: (json['feelslike_f'] as num).toDouble(),
+        windchill_c: (json['windchill_c'] as num).toDouble(),
+        windchill_f: (json['windchill_f'] as num).toDouble(),
+        heatindex_c: (json['heatindex_c'] as num).toDouble(),
+        heatindex_f: (json['heatindex_f'] as num).toDouble(),
+        dewpoint_c: (json['dewpoint_c'] as num).toDouble(),
+        dewpoint_f: (json['dewpoint_f'] as num).toDouble(),
+        vis_km: (json['vis_km'] as num).toDouble(),
+        vis_miles: (json['vis_miles'] as num).toDouble(),
+        uv: (json['uv'] as num).toDouble(),
+        gust_mph: (json['gust_mph'] as num).toDouble(),
+        gust_kph: (json['gust_kph'] as num).toDouble(),
+        short_rad: (json['short_rad'] as num).toDouble(),
+        diff_rad: (json['diff_rad'] as num).toDouble(),
+        dni: (json['dni'] as num).toDouble(),
+        gti: (json['gti'] as num).toDouble(),
+      );
+    } catch (e, stackTrace) {
+      print('ERROR in current_weather_model.fromJson: $e');
+      print('Stack trace: $stackTrace');
+      print('JSON data: $json');
+      rethrow;
+    }
   }
 }
 
@@ -114,10 +140,23 @@ class condition_model{
   });
 
   factory condition_model.fromJson(Map<String, dynamic> json) {
-    return condition_model(
-      text: json['text'] as String,
-      icon: json['icon'] as String,
-      code: json['code'] as int,
-    );
+    try {
+      print('Parsing condition_model with keys: ${json.keys.toList()}');
+
+      if (json['text'] == null) throw Exception('Missing "text" field in condition');
+      if (json['icon'] == null) throw Exception('Missing "icon" field in condition');
+      if (json['code'] == null) throw Exception('Missing "code" field in condition');
+
+      return condition_model(
+        text: json['text'] as String,
+        icon: json['icon'] as String,
+        code: json['code'] as int,
+      );
+    } catch (e, stackTrace) {
+      print('ERROR in condition_model.fromJson: $e');
+      print('Stack trace: $stackTrace');
+      print('JSON data: $json');
+      rethrow;
+    }
   }
 }

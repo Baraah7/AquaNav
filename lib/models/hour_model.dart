@@ -1,5 +1,5 @@
 class hour_model{
-  final String time_epoch;
+  final int time_epoch;
   final String time;
   final double temp_c;
   final double temp_f;
@@ -25,9 +25,9 @@ class hour_model{
   final double heatindex_f;
   final double dewpoint_c;
   final double dewpoint_f;
-  final int will_it_rain;
+  final bool will_it_rain;
   final int chance_of_rain;
-  final int will_it_snow;
+  final bool will_it_snow;
   final int chance_of_snow;
   final double vis_km;
   final double vis_miles;
@@ -82,46 +82,57 @@ class hour_model{
   });
 
   factory hour_model.fromJson(Map<String, dynamic> json) {
-    return hour_model(
-      time_epoch: json['time_epoch'].toString(),
-      time: json['time'] as String,
-      temp_c: (json['temp_c'] as num).toDouble(),
-      temp_f: (json['temp_f'] as num).toDouble(),
-      is_day: json['is_day'] as int,
-      condition_text: json['condition']['text'] as String,
-      condition_icon: json['condition']['icon'] as String,
-      wind_mph: (json['wind_mph'] as num).toDouble(),
-      wind_kph: (json['wind_kph'] as num).toDouble(),
-      wind_degree: json['wind_degree'] as int,
-      wind_dir: json['wind_dir'] as String,
-      pressure_mb: (json['pressure_mb'] as num).toDouble(),
-      pressure_in: (json['pressure_in'] as num).toDouble(),
-      precip_mm: (json['precip_mm'] as num).toDouble(),
-      precip_in: (json['precip_in'] as num).toDouble(),
-      snow_cm: (json['snow_cm'] as num).toDouble(),
-      humidity: (json['humidity'] as num).toDouble(),
-      cloud: (json['cloud'] as num).toDouble(),
-      feelslike_c: (json['feelslike_c'] as num).toDouble(),
-      feelslike_f: (json['feelslike_f'] as num).toDouble(),
-      windchill_c: (json['windchill_c'] as num).toDouble(),
-      windchill_f: (json['windchill_f'] as num).toDouble(),
-      heatindex_c: (json['heatindex_c'] as num).toDouble(),
-      heatindex_f: (json['heatindex_f'] as num).toDouble(),
-      dewpoint_c: (json['dewpoint_c'] as num).toDouble(),
-      dewpoint_f: (json['dewpoint_f'] as num).toDouble(),
-      will_it_rain: json['will_it_rain'] as int,
-      chance_of_rain: json['chance_of_rain'] as int,
-      will_it_snow: json['will_it_snow'] as int,
-      chance_of_snow: json['chance_of_snow'] as int,
-      vis_km: (json['vis_km'] as num).toDouble(),
-      vis_miles: (json['vis_miles'] as num).toDouble(),
-      gust_mph: (json['gust_mph'] as num).toDouble(),
-      gust_kph: (json['gust_kph'] as num).toDouble(),
-      uv: (json['uv'] as num).toDouble(),
-      short_rad: (json['short_rad'] as num).toDouble(),
-      diff_rad: (json['diff_rad'] as num).toDouble(),
-      dni: (json['dni'] as num).toDouble(),
-      gti: (json['gti'] as num).toDouble(),
-    );
+    try {
+      print('Parsing hour_model for time: ${json['time']}');
+
+      if (json['condition'] == null) throw Exception('Missing "condition" field in hour');
+
+      return hour_model(
+        time_epoch: json['time_epoch'] as int,
+        time: json['time'] is String ? json['time'] as String : json['time'].toString(),
+        temp_c: (json['temp_c'] as num).toDouble(),
+        temp_f: (json['temp_f'] as num).toDouble(),
+        is_day: json['is_day'] as int,
+        condition_text: json['condition']['text'] is String ? json['condition']['text'] as String : json['condition']['text'].toString(),
+        condition_icon: json['condition']['icon'] is String ? json['condition']['icon'] as String : json['condition']['icon'].toString(),
+        wind_mph: (json['wind_mph'] as num).toDouble(),
+        wind_kph: (json['wind_kph'] as num).toDouble(),
+        wind_degree: json['wind_degree'] as int,
+        wind_dir: json['wind_dir'] is String ? json['wind_dir'] as String : json['wind_dir'].toString(),
+        pressure_mb: (json['pressure_mb'] as num).toDouble(),
+        pressure_in: (json['pressure_in'] as num).toDouble(),
+        precip_mm: (json['precip_mm'] as num).toDouble(),
+        precip_in: (json['precip_in'] as num).toDouble(),
+        snow_cm: (json['snow_cm'] as num).toDouble(),
+        humidity: (json['humidity'] as num).toDouble(),
+        cloud: (json['cloud'] as num).toDouble(),
+        feelslike_c: (json['feelslike_c'] as num).toDouble(),
+        feelslike_f: (json['feelslike_f'] as num).toDouble(),
+        windchill_c: (json['windchill_c'] as num).toDouble(),
+        windchill_f: (json['windchill_f'] as num).toDouble(),
+        heatindex_c: (json['heatindex_c'] as num).toDouble(),
+        heatindex_f: (json['heatindex_f'] as num).toDouble(),
+        dewpoint_c: (json['dewpoint_c'] as num).toDouble(),
+        dewpoint_f: (json['dewpoint_f'] as num).toDouble(),
+        will_it_rain: (json['will_it_rain'] as int) == 1,
+        chance_of_rain: json['chance_of_rain'] as int,
+        will_it_snow: (json['will_it_snow'] as int) == 1,
+        chance_of_snow: json['chance_of_snow'] as int,
+        vis_km: (json['vis_km'] as num).toDouble(),
+        vis_miles: (json['vis_miles'] as num).toDouble(),
+        gust_mph: (json['gust_mph'] as num).toDouble(),
+        gust_kph: (json['gust_kph'] as num).toDouble(),
+        uv: (json['uv'] as num).toDouble(),
+        short_rad: (json['short_rad'] as num).toDouble(),
+        diff_rad: (json['diff_rad'] as num).toDouble(),
+        dni: (json['dni'] as num).toDouble(),
+        gti: (json['gti'] as num).toDouble(),
+      );
+    } catch (e, stackTrace) {
+      print('ERROR in hour_model.fromJson: $e');
+      print('Stack trace: $stackTrace');
+      print('JSON data keys: ${json.keys.toList()}');
+      rethrow;
+    }
   }
 }

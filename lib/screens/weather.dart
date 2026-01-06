@@ -33,7 +33,7 @@ class _WeatherPageState extends State<Weather> {
 
     try {
       print('Starting to fetch weather data...');
-      final weather_response_model data = await weatherService.getCurrentWeather("Manama", false);
+      final weather_response_model data = await weatherService.getWeather("Manama", false, 1, false);
       print('Weather data received successfully');
 
       setState(() {
@@ -51,8 +51,8 @@ class _WeatherPageState extends State<Weather> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
+    return SingleChildScrollView(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
