@@ -16,6 +16,8 @@ class Weather extends StatefulWidget {
 class _WeatherPageState extends State<Weather> {
   final weatherService = WeatherApiService();
   weather_response_model? weatherData;
+  String? errorMessage;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -24,31 +26,58 @@ class _WeatherPageState extends State<Weather> {
   }
 
   Future<void> _loadWeatherData() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
     try {
-      final weather_response_model data = await weatherService.getCurrentWeather("Manama", false);
+      print('Starting to fetch weather data...');
+      final weather_response_model data = await weatherService.getWeather("Manama", false, 1, false);
+      print('Weather data received successfully');
 
       setState(() {
         weatherData = data;
-      }); 
+        isLoading = false;
+      });
     } catch (e) {
-      // Handle error silently or show user-friendly message
+      print('Error fetching weather: $e');
+      setState(() {
+        errorMessage = e.toString();
+        isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
+    return SingleChildScrollView(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('Weather', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
 
-            if (weatherData != null) 
-             const WeatherList()
-            else 
-             const CircularProgressIndicator(),
+            if (isLoading)
+              const CircularProgressIndicator()
+            else if (errorMessage != null)
+              Column(
+                children: [
+                  const Icon(Icons.error, color: Colors.red, size: 48),
+                  const SizedBox(height: 10),
+                  Text('Error: $errorMessage', style: const TextStyle(color: Colors.red)),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _loadWeatherData,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              )
+            else if (weatherData != null)
+              WeatherList(weatherData: weatherData!)
+            else
+              const Text('No data available'),
           ],
         ),
       ),
