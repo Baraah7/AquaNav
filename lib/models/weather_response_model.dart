@@ -5,7 +5,7 @@ import 'forecast_model.dart';
 class weather_response_model {
   final location_model location;
   final current_weather_model currentWeather;
-  final forecast_model forecast;
+  final forecast_model? forecast;
 
   // Getter to access currentWeather as 'current'
   current_weather_model get current => currentWeather;
@@ -13,14 +13,14 @@ class weather_response_model {
   weather_response_model({
     required this.location,
     required this.currentWeather,
-    required this.forecast,
+    this.forecast,
   });
 
   factory weather_response_model.fromJson(Map<String, dynamic> json) {
     return weather_response_model(
       location: location_model.fromJson(json['location']),
       currentWeather: current_weather_model.fromJson(json['current']),
-      forecast: forecast_model.fromJson(json['forecast']),
+      forecast: json['forecast'] != null ? forecast_model.fromJson(json['forecast']) : null,
     );
   }
 }
