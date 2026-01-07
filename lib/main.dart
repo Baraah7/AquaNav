@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/weather.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../screens/map.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Weather();
+    return map();
   }
 
 }

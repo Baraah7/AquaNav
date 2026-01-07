@@ -1,12 +1,12 @@
-import 'package:aquanav/widgets/weather_card.dart';
+import 'package:aquanav/widgets/weather/weather_card.dart';
 import 'package:flutter/material.dart';
-import '../models/weather/weather_response_model.dart';
+import '../../models/weather/weather_response_model.dart';
 
 class WeatherList extends StatelessWidget {
   final weather_response_model weatherData;
 
   const WeatherList({super.key, required this.weatherData});
-
+ 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
