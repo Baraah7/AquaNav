@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utilites/weather_api_service.dart';
-import '../models/weather_response_model.dart';
+import '../models/weather/weather_response_model.dart';
 import '../widgets/weather_list.dart';
 //Load configuration at runtime from a .env file which can be
 // used throughout the application.
