@@ -43,7 +43,11 @@ class WeatherList extends StatelessWidget {
             const Text(" "),
             const Text("Forecast"),
             const Text(" "),
+            
+
+            //this part is for forecast data but wihtout hourly data
             ...weatherData.forecast != null ? [
+              weather_card("Day", '${weatherData.forecast!.forecastDay.date}'),
               weather_card('Avg Temperature', '${weatherData.forecast!.forecastDay.day.avgtemp_c} °C'),
               weather_card('Max Temperature', '${weatherData.forecast!.forecastDay.day.maxtemp_c} °C'),
               weather_card('Min Temperature', '${weatherData.forecast!.forecastDay.day.mintemp_c} °C'),
