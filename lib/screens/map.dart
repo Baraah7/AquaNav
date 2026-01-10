@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:flutter_map/flutter_map.dart';
 
@@ -11,7 +12,7 @@ class Map extends StatefulWidget {
 }
 
 class _MapScreen extends State<Map> {
-  MapController mapController = M
+  MapController mapController = MapController();
   Location location = Location();
   bool _serviceEnabled = false;
   PermissionStatus _permissionStatus = PermissionStatus.denied;
@@ -47,7 +48,12 @@ class _MapScreen extends State<Map> {
 
       _locationData = await location.getLocation();
       log('Location fetched: ${_locationData.toString()}');
-      setState(() {});
+      setState(() {
+        mapController.move(
+          LatLng(_locationData?.latitude ?? 0, _locationData?.longitude ?? 0),
+          16,
+        );
+      });
     } catch (e) {
       log('Error getting location: $e');
     }
@@ -58,7 +64,18 @@ class _MapScreen extends State<Map> {
     return Scaffold(
       body: Stack(
         children: [
-          flutterMap(_locationData)],
+          FlutterMap(
+            mapController: mapController,
+            options: const MapOptions(
+              initialZoom: 5,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.app',
+              )
+            ])
+        ],
       ),
     );
   }
