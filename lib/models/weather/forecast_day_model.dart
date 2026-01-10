@@ -1,6 +1,6 @@
-import '../models/day_model.dart';
-import '../models/astro_model.dart';
-import '../models/hour_model.dart';
+import 'day_model.dart';
+import 'astro_model.dart';
+import 'hour_model.dart';
 
 class forecast_day {
   final String date;

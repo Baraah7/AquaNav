@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/weather.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../screens/map.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +35,45 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Weather();
+    return Scaffold(
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          //button to go to weather screen
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              textStyle: const TextStyle(fontSize: 18, color: Color.fromARGB(255, 10, 97, 43)),
+              backgroundColor: const Color.fromARGB(255, 204, 231, 205),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Weather()),
+              );
+            },
+            child: const Text('Go to Weather Screen'),
+          ),
+          const SizedBox(height: 20),
+          //button to go to weather screen
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              textStyle: const TextStyle(fontSize: 18, color: Color.fromARGB(255, 10, 97, 43)),
+              backgroundColor: const Color.fromARGB(255, 204, 231, 205),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Map()),
+              );
+            },
+            child: const Text('Go to Map Screen'),
+          ),
+        ],
+      ),
+    );
   }
 
 }

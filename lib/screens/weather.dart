@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../utilites/weather_api_service.dart';
-import '../models/weather_response_model.dart';
+import '../models/weather/weather_response_model.dart';
 import '../widgets/weather_list.dart';
 //Load configuration at runtime from a .env file which can be
 // used throughout the application.
-
 
 class Weather extends StatefulWidget {
   const Weather({super.key});
@@ -33,7 +32,12 @@ class _WeatherPageState extends State<Weather> {
 
     try {
       print('Starting to fetch weather data...');
-      final weather_response_model data = await weatherService.getWeather("Manama", false, 1, false);
+      final weather_response_model data = await weatherService.getWeather(
+        "Manama",
+        false,
+        1,
+        false,
+      );
       print('Weather data received successfully');
 
       setState(() {
@@ -56,7 +60,10 @@ class _WeatherPageState extends State<Weather> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Weather', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const Text(
+              'Weather',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 20),
 
             if (isLoading)
@@ -66,7 +73,10 @@ class _WeatherPageState extends State<Weather> {
                 children: [
                   const Icon(Icons.error, color: Colors.red, size: 48),
                   const SizedBox(height: 10),
-                  Text('Error: $errorMessage', style: const TextStyle(color: Colors.red)),
+                  Text(
+                    'Error: $errorMessage',
+                    style: const TextStyle(color: Colors.red),
+                  ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: _loadWeatherData,
@@ -84,3 +94,4 @@ class _WeatherPageState extends State<Weather> {
     );
   }
 }
+
