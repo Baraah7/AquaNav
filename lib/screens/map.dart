@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:flutter_map/flutter_map.dart';
 
 class Map extends StatefulWidget {
   const Map({super.key});
@@ -10,6 +11,7 @@ class Map extends StatefulWidget {
 }
 
 class _MapScreen extends State<Map> {
+  MapController mapController = M
   Location location = Location();
   bool _serviceEnabled = false;
   PermissionStatus _permissionStatus = PermissionStatus.denied;
@@ -32,7 +34,7 @@ class _MapScreen extends State<Map> {
           return;
         }
       }
-      
+
       _permissionStatus = await location.hasPermission();
       if (_permissionStatus == PermissionStatus.denied) {
         log('Location permission denied');
@@ -42,7 +44,7 @@ class _MapScreen extends State<Map> {
           return;
         }
       }
-      
+
       _locationData = await location.getLocation();
       log('Location fetched: ${_locationData.toString()}');
       setState(() {});
@@ -54,10 +56,9 @@ class _MapScreen extends State<Map> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Text(
-          _locationData?.toString() ?? 'Fetching location...',
-        ),
+      body: Stack(
+        children: [
+          flutterMap(_locationData)],
       ),
     );
   }
