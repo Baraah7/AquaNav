@@ -21,7 +21,10 @@ class _MapScreen extends State<Map> {
   @override
   void initState() {
     super.initState();
-    initLocation();
+    // Delay initialization to allow the widget tree to build first
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      initLocation();
+    });
   }
 
   Future<void> initLocation() async {
@@ -32,6 +35,7 @@ class _MapScreen extends State<Map> {
         _serviceEnabled = await location.requestService();
         if (!_serviceEnabled) {
           log('User denied location service');
+          if (mounted) setState(() {});
           return;
         }
       }
@@ -42,20 +46,24 @@ class _MapScreen extends State<Map> {
         _permissionStatus = await location.requestPermission();
         if (_permissionStatus != PermissionStatus.granted) {
           log('User denied location permission');
+          if (mounted) setState(() {});
           return;
         }
       }
 
       _locationData = await location.getLocation();
       log('Location fetched: ${_locationData.toString()}');
-      setState(() {
-        mapController.move(
-          LatLng(_locationData?.latitude ?? 0, _locationData?.longitude ?? 0),
-          16,
-        );
-      });
+      if (mounted) {
+        setState(() {
+          mapController.move(
+            LatLng(_locationData?.latitude ?? 0, _locationData?.longitude ?? 0),
+            16,
+          );
+        });
+      }
     } catch (e) {
       log('Error getting location: $e');
+      if (mounted) setState(() {});
     }
   }
 
@@ -71,8 +79,13 @@ class _MapScreen extends State<Map> {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.bahaar.bahaarapp',
+                maxZoom: 19,
+                subdomains: const ['a', 'b', 'c'],
+                additionalOptions: const {
+                  'id': 'mapbox.streets',
+                },
               )
             ])
         ],
