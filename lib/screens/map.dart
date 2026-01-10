@@ -72,7 +72,7 @@ class _MapScreen extends State<Map> {
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.app',
+                userAgentPackageName: 'com.bahaar.bahaarapp',
               )
             ])
         ],
