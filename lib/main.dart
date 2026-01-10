@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../screens/weather.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../screens/map.dart';
+import 'widgets/map/geojson_overlay_test_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -70,7 +71,19 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             },
             child: const Text('Go to Map Screen'),
+            
           ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const GeoJsonOverlayTestPage(),
+                ),
+              );
+            },
+            child: const Text('GeoJSON Test'),
+          )
         ],
       ),
     );

@@ -17,14 +17,12 @@ class _MapScreen extends State<Map> {
   bool _serviceEnabled = false;
   PermissionStatus _permissionStatus = PermissionStatus.denied;
   LocationData? _locationData;
+  bool _mapReady = false;
 
   @override
   void initState() {
     super.initState();
-    // Delay initialization to allow the widget tree to build first
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      initLocation();
-    });
+    initLocation();
   }
 
   Future<void> initLocation() async {
@@ -54,17 +52,30 @@ class _MapScreen extends State<Map> {
       _locationData = await location.getLocation();
       log('Location fetched: ${_locationData.toString()}');
       if (mounted) {
-        setState(() {
-          mapController.move(
-            LatLng(_locationData?.latitude ?? 0, _locationData?.longitude ?? 0),
-            16,
-          );
-        });
+        setState(() {});
+        // Move to location only if map is ready
+        _moveToLocationIfReady();
       }
     } catch (e) {
       log('Error getting location: $e');
       if (mounted) setState(() {});
     }
+  }
+
+  void _moveToLocationIfReady() {
+    if (_mapReady && _locationData != null) {
+      mapController.move(
+        LatLng(_locationData!.latitude ?? 0, _locationData!.longitude ?? 0),
+        16,
+      );
+    }
+  }
+
+  void _onMapReady() {
+    setState(() {
+      _mapReady = true;
+    });
+    _moveToLocationIfReady();
   }
 
   @override
@@ -74,8 +85,9 @@ class _MapScreen extends State<Map> {
         children: [
           FlutterMap(
             mapController: mapController,
-            options: const MapOptions(
+            options: MapOptions(
               initialZoom: 5,
+              onMapReady: _onMapReady,
             ),
             children: [
               TileLayer(
