@@ -1,0 +1,19 @@
+{
+  "bbox": {
+    "min_lon": 50.35,
+    "min_lat": 25.85,
+    "max_lon": 50.85,
+    "max_lat": 26.35
+  },
+  "grid": {
+    "width": 500,
+    "height": 500,
+    "resolution_degrees": 0.001,
+    "resolution_meters_approx": 111.0
+  },
+  "projection": "EPSG:4326",
+  "encoding": {
+    "water": 1,
+    "land": 0
+  }
+}

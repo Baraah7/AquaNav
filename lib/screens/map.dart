@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:aquanav/services/navigation_mask.dart';
 
 class Map extends StatefulWidget {
   const Map({super.key});
@@ -18,11 +19,28 @@ class _MapScreen extends State<Map> {
   PermissionStatus _permissionStatus = PermissionStatus.denied;
   LocationData? _locationData;
   bool _mapReady = false;
+  final NavigationMask _navigationMask = NavigationMask();
+  bool _maskInitialized = false;
 
   @override
   void initState() {
     super.initState();
     initLocation();
+    initNavigationMask();
+  }
+
+  Future<void> initNavigationMask() async {
+    try {
+      await _navigationMask.initialize();
+      if (mounted) {
+        setState(() {
+          _maskInitialized = true;
+        });
+        log('Navigation mask initialized successfully');
+      }
+    } catch (e) {
+      log('Error initializing navigation mask: $e');
+    }
   }
 
   Future<void> initLocation() async {
@@ -64,10 +82,24 @@ class _MapScreen extends State<Map> {
 
   void _moveToLocationIfReady() {
     if (_mapReady && _locationData != null) {
-      mapController.move(
-        LatLng(_locationData!.latitude ?? 0, _locationData!.longitude ?? 0),
-        16,
-      );
+      final targetLocation = LatLng(_locationData!.latitude ?? 0, _locationData!.longitude ?? 0);
+
+      // Validate location against navigation mask if initialized
+      if (_maskInitialized) {
+        final isNavigable = _navigationMask.isPointNavigable(targetLocation);
+        if (!isNavigable) {
+          log('Warning: Current location appears to be on land');
+          // Optionally find nearest water location
+          final nearestWater = _navigationMask.findNearestWaterPoint(targetLocation);
+          if (nearestWater != null) {
+            log('Nearest water location: ${nearestWater.latitude}, ${nearestWater.longitude}');
+          }
+        } else {
+          log('Location validated: on navigable water');
+        }
+      }
+
+      mapController.move(targetLocation, 16);
     }
   }
 
@@ -88,6 +120,33 @@ class _MapScreen extends State<Map> {
             options: MapOptions(
               initialZoom: 5,
               onMapReady: _onMapReady,
+              onTap: (tapPosition, point) {
+                // Validate tapped location if mask is initialized
+                if (_maskInitialized) {
+                  final isNavigable = _navigationMask.isPointNavigable(point);
+                  log('Tapped location (${point.latitude}, ${point.longitude}): ${isNavigable ? "Water" : "Land"}');
+
+                  if (!isNavigable) {
+                    // Show a snackbar when user taps on land
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('This location is on land. Tap on water for navigation.'),
+                        duration: const Duration(seconds: 2),
+                        action: SnackBarAction(
+                          label: 'Find Water',
+                          onPressed: () {
+                            final nearestWater = _navigationMask.findNearestWaterPoint(point);
+                            if (nearestWater != null) {
+                              mapController.move(nearestWater, mapController.camera.zoom);
+                              log('Moved to nearest water: ${nearestWater.latitude}, ${nearestWater.longitude}');
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  }
+                }
+              },
             ),
             children: [
               TileLayer(
@@ -98,8 +157,54 @@ class _MapScreen extends State<Map> {
                 additionalOptions: const {
                   'id': 'mapbox.streets',
                 },
-              )
-            ])
+              ),
+              if (_locationData != null)
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: LatLng(_locationData!.latitude ?? 0, _locationData!.longitude ?? 0),
+                      width: 40,
+                      height: 40,
+                      child: Icon(
+                        Icons.my_location,
+                        color: _maskInitialized && _navigationMask.isNavigable(
+                          _locationData!.longitude ?? 0,
+                          _locationData!.latitude ?? 0,
+                        ) ? Colors.blue : Colors.orange,
+                        size: 30,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+          // Navigation mask status indicator
+          Positioned(
+            top: 50,
+            right: 10,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: _maskInitialized ? Colors.green : Colors.grey,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _maskInitialized ? Icons.check_circle : Icons.hourglass_empty,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _maskInitialized ? 'Navigation Ready' : 'Loading Mask...',
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

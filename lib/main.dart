@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../screens/weather.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../screens/map.dart';
+import '../screens/integrated_map.dart';
 import 'widgets/map/geojson_overlay_test_page.dart';
 
 Future<void> main() async {
@@ -73,7 +74,28 @@ class _MyHomePageState extends State<MyHomePage> {
             child: const Text('Go to Map Screen'),
             
           ),
+          const SizedBox(height: 20),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              textStyle: const TextStyle(fontSize: 18),
+              backgroundColor: const Color.fromARGB(255, 173, 216, 230),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const IntegratedMap()),
+              );
+            },
+            child: const Text('Integrated Map (All Layers)'),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              textStyle: const TextStyle(fontSize: 14),
+              backgroundColor: const Color.fromARGB(255, 230, 230, 230),
+            ),
             onPressed: () {
               Navigator.push(
                 context,
@@ -82,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               );
             },
-            child: const Text('GeoJSON Test'),
+            child: const Text('GeoJSON Test (Dev)'),
           )
         ],
       ),
