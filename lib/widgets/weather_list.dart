@@ -1,4 +1,4 @@
-import 'package:aquanav/widgets/weather_card.dart';
+import 'package:Bahaar/widgets/weather_card.dart';
 import 'package:flutter/material.dart';
 import '../models/weather/weather_response_model.dart';
 

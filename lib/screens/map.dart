@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:aquanav/services/navigation_mask.dart';
+import 'package:Bahaar/services/navigation_mask.dart';
 
 class Map extends StatefulWidget {
   const Map({super.key});

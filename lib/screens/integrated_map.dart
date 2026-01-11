@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:aquanav/services/navigation_mask.dart';
+import 'package:Bahaar/services/navigation_mask.dart';
 
 /// Integrated map combining three layers:
 /// 1. Base map (OpenStreetMap tiles)
