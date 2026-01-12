@@ -216,6 +216,7 @@ class _IntegratedMapState extends State<IntegratedMap> {
               isVisible: _layerManager.showDepthLayer,
               opacity: _layerManager.depthLayerOpacity,
               visualizationType: _layerManager.depthVisualizationType,
+              navigationMask: _maskInitialized ? _navigationMask : null,
             );
           },
         ),
@@ -416,7 +417,7 @@ class _IntegratedMapState extends State<IntegratedMap> {
             builder: (context, _) {
               if (!_layerManager.showLayerControls) {
                 return Positioned(
-                  top: 10,
+                  top: 30,
                   left: 10,
                   child: FloatingActionButton.small(
                     heroTag: 'layer_controls',
@@ -432,7 +433,7 @@ class _IntegratedMapState extends State<IntegratedMap> {
 
           // Depth legend toggle button (top left, below layer control)
           Positioned(
-            top: 60,
+            top: 80,
             left: 10,
             child: FloatingActionButton.small(
               heroTag: 'depth_legend',

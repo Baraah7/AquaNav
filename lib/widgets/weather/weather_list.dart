@@ -9,14 +9,14 @@ class WeatherList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: GridView(
-        shrinkWrap: true,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 5,
-          mainAxisSpacing: 5,
-        ),
+    return GridView(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 5,
+        mainAxisSpacing: 5,
+      ),
         children: [
           Image.network(
             'https:${weatherData.currentWeather.condition.icon}',
@@ -113,7 +113,6 @@ class WeatherList extends StatelessWidget {
                 ]
               : [weather_card('Forecast', 'Not Available')],
         ],
-      ),
-    );
+      );
   }
 }

@@ -1,7 +1,9 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:Bahaar/utilities/map_constants.dart';
 import 'package:Bahaar/services/map_layer_manager.dart';
+import 'package:Bahaar/services/navigation_mask.dart';
 
 /// Enhanced depth layer widget with multiple visualization options:
 /// 1. Bathymetric (colored depth map)
@@ -11,12 +13,14 @@ class EnhancedDepthLayer extends StatelessWidget {
   final bool isVisible;
   final double opacity;
   final DepthVisualizationType visualizationType;
+  final NavigationMask? navigationMask;
 
   const EnhancedDepthLayer({
     super.key,
     required this.isVisible,
     required this.opacity,
     required this.visualizationType,
+    this.navigationMask,
   });
 
   @override
@@ -28,14 +32,26 @@ class EnhancedDepthLayer extends StatelessWidget {
     // Return the appropriate layer(s) based on visualization type
     switch (visualizationType) {
       case DepthVisualizationType.bathymetric:
-        return _BathymetricDepthLayer(opacity: opacity);
+        return _BathymetricDepthLayer(
+          opacity: opacity,
+          navigationMask: navigationMask,
+        );
       case DepthVisualizationType.nautical:
-        return _NauticalChartLayer(opacity: opacity);
+        return _NauticalChartLayer(
+          opacity: opacity,
+          navigationMask: navigationMask,
+        );
       case DepthVisualizationType.combined:
         return Stack(
           children: [
-            _BathymetricDepthLayer(opacity: opacity * 0.6),
-            _NauticalChartLayer(opacity: opacity),
+            _BathymetricDepthLayer(
+              opacity: opacity * 0.6,
+              navigationMask: navigationMask,
+            ),
+            _NauticalChartLayer(
+              opacity: opacity,
+              navigationMask: navigationMask,
+            ),
           ],
         );
     }
@@ -46,8 +62,12 @@ class EnhancedDepthLayer extends StatelessWidget {
 /// Uses General Bathymetric Chart of the Oceans (GEBCO) or similar tiles
 class _BathymetricDepthLayer extends StatelessWidget {
   final double opacity;
+  final NavigationMask? navigationMask;
 
-  const _BathymetricDepthLayer({required this.opacity});
+  const _BathymetricDepthLayer({
+    required this.opacity,
+    this.navigationMask,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -67,13 +87,14 @@ class _BathymetricDepthLayer extends StatelessWidget {
       tileProvider: NetworkTileProvider(),
       keepBuffer: 2,
       tileBuilder: (context, tileWidget, tile) {
-        return ColorFiltered(
-          colorFilter: ColorFilter.mode(
-            Colors.white.withValues(alpha: opacity),
-            BlendMode.modulate,
-          ),
+        final maskedTile = _WaterMaskedTile(
+          tile: tile,
+          navigationMask: navigationMask,
+          opacity: opacity,
           child: tileWidget,
         );
+
+        return maskedTile;
       },
     );
   }
@@ -82,8 +103,12 @@ class _BathymetricDepthLayer extends StatelessWidget {
 /// Nautical chart layer with navigation symbols (OpenSeaMap)
 class _NauticalChartLayer extends StatelessWidget {
   final double opacity;
+  final NavigationMask? navigationMask;
 
-  const _NauticalChartLayer({required this.opacity});
+  const _NauticalChartLayer({
+    required this.opacity,
+    this.navigationMask,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -95,16 +120,147 @@ class _NauticalChartLayer extends StatelessWidget {
       tileProvider: NetworkTileProvider(),
       keepBuffer: 2,
       tileBuilder: (context, tileWidget, tile) {
-        return ColorFiltered(
-          colorFilter: ColorFilter.mode(
-            Colors.white.withValues(alpha: opacity),
-            BlendMode.modulate,
-          ),
+        final maskedTile = _WaterMaskedTile(
+          tile: tile,
+          navigationMask: navigationMask,
+          opacity: opacity,
           child: tileWidget,
         );
+
+        return maskedTile;
       },
     );
   }
+}
+
+/// Widget that masks tile content to only show over water areas
+class _WaterMaskedTile extends StatelessWidget {
+  final TileImage tile;
+  final NavigationMask? navigationMask;
+  final double opacity;
+  final Widget child;
+
+  const _WaterMaskedTile({
+    required this.tile,
+    required this.navigationMask,
+    required this.opacity,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // If no navigation mask is available, just apply opacity
+    if (navigationMask == null || !navigationMask!.isInitialized) {
+      return Opacity(
+        opacity: opacity,
+        child: child,
+      );
+    }
+
+    // Apply water mask: clip the tile to only show over water areas
+    return ClipPath(
+      clipper: _WaterOnlyClipper(
+        tile: tile,
+        navigationMask: navigationMask!,
+      ),
+      child: Opacity(
+        opacity: opacity,
+        child: child,
+      ),
+    );
+  }
+}
+
+/// Custom clipper that only shows the tile over water areas
+class _WaterOnlyClipper extends CustomClipper<Path> {
+  final TileImage tile;
+  final NavigationMask navigationMask;
+
+  _WaterOnlyClipper({
+    required this.tile,
+    required this.navigationMask,
+  });
+
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+
+    // Calculate the geographic bounds of this tile
+    final coords = tile.coordinates;
+    final bounds = _tileToBounds(coords.x, coords.y, coords.z);
+
+    // Sample points across the tile to create water regions
+    const samples = 32; // Higher resolution for smoother edges
+    final stepX = size.width / samples;
+    final stepY = size.height / samples;
+
+    // Build path for water areas
+    for (int y = 0; y < samples; y++) {
+      for (int x = 0; x < samples; x++) {
+        // Convert tile pixel to geographic coordinates (center of cell)
+        final lon = bounds.west + ((x + 0.5) / samples) * (bounds.east - bounds.west);
+        final lat = bounds.north - ((y + 0.5) / samples) * (bounds.north - bounds.south);
+
+        // Check if this point is on water
+        if (navigationMask.isNavigable(lon, lat)) {
+          // Add this cell to the path
+          path.addRect(Rect.fromLTWH(
+            x * stepX,
+            y * stepY,
+            stepX + 0.5, // Small overlap to avoid gaps
+            stepY + 0.5,
+          ));
+        }
+      }
+    }
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(_WaterOnlyClipper oldClipper) {
+    final coords = tile.coordinates;
+    final oldCoords = oldClipper.tile.coordinates;
+    return coords.x != oldCoords.x ||
+        coords.y != oldCoords.y ||
+        coords.z != oldCoords.z;
+  }
+
+  /// Convert tile coordinates to geographic bounds
+  _TileBounds _tileToBounds(int x, int y, int z) {
+    final n = 1 << z; // 2^z
+    final west = x / n * 360.0 - 180.0;
+    final east = (x + 1) / n * 360.0 - 180.0;
+
+    final north = _tile2lat(y, z);
+    final south = _tile2lat(y + 1, z);
+
+    return _TileBounds(north: north, south: south, east: east, west: west);
+  }
+
+  /// Convert tile Y coordinate to latitude
+  double _tile2lat(int y, int z) {
+    final n = 1 << z;
+    final value = pi * (1 - 2 * y / n);
+    final sinhValue = (exp(value) - exp(-value)) / 2;
+    final latRad = atan(sinhValue);
+    return latRad * 180.0 / pi;
+  }
+}
+
+/// Helper class for tile geographic bounds
+class _TileBounds {
+  final double north;
+  final double south;
+  final double east;
+  final double west;
+
+  _TileBounds({
+    required this.north,
+    required this.south,
+    required this.east,
+    required this.west,
+  });
 }
 
 /// Legend widget showing depth color scale
