@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../screens/weather.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../screens/map.dart';
-import '../screens/integrated_map.dart';
-import 'widgets/map/geojson_overlay_test_page.dart';
+import 'package:Bahaar/screens/weather.dart';
+import 'package:Bahaar/screens/map.dart';
+import 'package:Bahaar/screens/integrated_map.dart';
+import 'package:Bahaar/screens/integrated_map_refactored.dart';
+import 'package:Bahaar/widgets/map/geojson_overlay_test_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,7 +88,31 @@ class _MyHomePageState extends State<MyHomePage> {
                 MaterialPageRoute(builder: (context) => const IntegratedMap()),
               );
             },
-            child: const Text('Integrated Map (All Layers)'),
+            child: const Text('Integrated Map (Old Version)'),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              backgroundColor: const Color.fromARGB(255, 100, 181, 246),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const IntegratedMapRefactored()),
+              );
+            },
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.water, color: Colors.white),
+                SizedBox(width: 8),
+                Text('NEW: Depth Colors Map', style: TextStyle(color: Colors.white)),
+                SizedBox(width: 8),
+                Icon(Icons.star, color: Colors.amber, size: 20),
+              ],
+            ),
           ),
           const SizedBox(height: 20),
           ElevatedButton(
