@@ -2,11 +2,13 @@
 
 ## Overview
 
-The Bahaar app now features a **fully integrated multi-layer map system** that combines three essential components:
+The Bahaar app now features a **fully integrated multi-layer map system** that combines five essential components:
 
 1. **Base Map Layer** - OpenStreetMap tiles
-2. **GeoJSON Overlay Layer** - Fishing spots, shipping lanes, protected zones, fishing zones
-3. **Navigation Mask Layer** - Land/water validation and coastline awareness
+2. **Depth Layer** - OpenSeaMap bathymetric/nautical data (NEW!)
+3. **GeoJSON Overlay Layer** - Fishing spots, shipping lanes, protected zones, fishing zones
+4. **Navigation Mask Layer** - Land/water validation and coastline awareness
+5. **User Markers** - Location and interactive markers
 
 ## Architecture
 
@@ -14,15 +16,18 @@ The Bahaar app now features a **fully integrated multi-layer map system** that c
 
 ```
 ┌─────────────────────────────────────────┐
-│  User Location Marker (Top)            │
+│  User Location Marker (Top)            │  Layer 5
 ├─────────────────────────────────────────┤
-│  Navigation Mask Visualization          │  Layer 3
+│  Navigation Mask Visualization          │  Layer 4
 │  (Optional - shows coverage boundary)   │
 ├─────────────────────────────────────────┤
-│  GeoJSON Overlays:                      │  Layer 2
-│  ├─ Marker Layer (Fishing Spots)        │  2c
-│  ├─ Polyline Layer (Shipping Lanes)     │  2b
-│  └─ Polygon Layer (Zones)               │  2a
+│  GeoJSON Overlays:                      │  Layer 3
+│  ├─ Marker Layer (Fishing Spots)        │  3c
+│  ├─ Polyline Layer (Shipping Lanes)     │  3b
+│  └─ Polygon Layer (Zones)               │  3a
+├─────────────────────────────────────────┤
+│  Depth Layer (OpenSeaMap) ⭐ NEW!       │  Layer 2
+│  (Depth contours, buoys, hazards)       │
 ├─────────────────────────────────────────┤
 │  Base Map Tiles (OpenStreetMap)         │  Layer 1
 └─────────────────────────────────────────┘

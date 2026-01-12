@@ -6,11 +6,15 @@ import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:Bahaar/services/navigation_mask.dart';
+import 'package:Bahaar/widgets/map/depth_layer.dart';
+import 'package:Bahaar/utilities/map_constants.dart';
 
-/// Integrated map combining three layers:
+/// Integrated map combining five layers:
 /// 1. Base map (OpenStreetMap tiles)
-/// 2. GeoJSON overlay (fishing zones, shipping lanes, etc.)
-/// 3. Navigation mask (land/water validation visualization)
+/// 2. Depth layer (OpenSeaMap bathymetric data)
+/// 3. GeoJSON overlay (fishing zones, shipping lanes, etc.)
+/// 4. Navigation mask (land/water validation visualization)
+/// 5. User markers and location
 class IntegratedMap extends StatefulWidget {
   const IntegratedMap({super.key});
 
@@ -38,6 +42,8 @@ class _IntegratedMapState extends State<IntegratedMap> {
 
   // Layer visibility toggles
   final bool _showBaseMap = true;
+  bool _showDepthLayer = true;
+  double _depthLayerOpacity = MapConstants.depthLayerOpacity;
   bool _showGeoJsonLayers = true;
   bool _showMaskOverlay = false;
   bool _showFishingSpots = true;
@@ -328,6 +334,67 @@ class _IntegratedMapState extends State<IntegratedMap> {
           ),
           const Divider(),
 
+          // Depth Layer Section
+          const Text(
+            'Depth Layer',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          ),
+          const SizedBox(height: 4),
+          SwitchListTile(
+            title: const Text('OpenSeaMap Nautical', style: TextStyle(fontSize: 13)),
+            subtitle: const Text(
+              'Depth contours & navigation aids',
+              style: TextStyle(fontSize: 10),
+            ),
+            value: _showDepthLayer,
+            onChanged: (val) => setState(() => _showDepthLayer = val),
+            dense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+          if (_showDepthLayer) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Opacity',
+                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                  Slider(
+                    value: _depthLayerOpacity,
+                    min: 0.0,
+                    max: 1.0,
+                    divisions: 10,
+                    label: '${(_depthLayerOpacity * 100).round()}%',
+                    onChanged: (val) => setState(() => _depthLayerOpacity = val),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Shows: Depth contours, buoys, harbors, hazards',
+                          style: TextStyle(fontSize: 9),
+                        ),
+                        Text(
+                          'Best visibility: Zoom 12+',
+                          style: TextStyle(fontSize: 9, fontStyle: FontStyle.italic),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const Divider(),
+
           // GeoJSON Layers Section
           const Text(
             'GeoJSON Overlays',
@@ -464,29 +531,35 @@ class _IntegratedMapState extends State<IntegratedMap> {
               // Layer 1: Base map tiles
               if (_showBaseMap)
                 TileLayer(
-                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.bahaar.bahaarapp',
-                  maxZoom: 19,
-                  subdomains: const ['a', 'b', 'c'],
+                  urlTemplate: MapConstants.osmBaseUrl,
+                  userAgentPackageName: MapConstants.userAgent,
+                  maxZoom: MapConstants.osmMaxZoom.toDouble(),
+                  subdomains: MapConstants.osmSubdomains,
                 ),
 
-              // Layer 2: GeoJSON overlays (bottom to top: polygons → polylines → markers)
-              // 2a. Zone polygons
+              // Layer 2: Depth layer (OpenSeaMap nautical charts)
+              DepthLayer(
+                isVisible: _showDepthLayer,
+                opacity: _depthLayerOpacity,
+              ),
+
+              // Layer 3: GeoJSON overlays (bottom to top: polygons → polylines → markers)
+              // 3a. Zone polygons
               PolygonLayer(
                 polygons: _buildZonePolygons(),
               ),
 
-              // 2b. Shipping lanes
+              // 3b. Shipping lanes
               PolylineLayer(
                 polylines: _buildShippingLanes(),
               ),
 
-              // 2c. Fishing spots
+              // 3c. Fishing spots
               MarkerLayer(
                 markers: _buildFishingSpotMarkers(),
               ),
 
-              // Layer 3: Navigation mask overlay (optional visualization)
+              // Layer 4: Navigation mask overlay (optional visualization)
               PolygonLayer(
                 polygons: _buildMaskOverlay(),
               ),
