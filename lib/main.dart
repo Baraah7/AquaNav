@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:Bahaar/screens/weather.dart';
-import 'package:Bahaar/screens/map.dart';
 import 'package:Bahaar/screens/integrated_map.dart';
-import 'package:Bahaar/screens/integrated_map_refactored.dart';
-import 'package:Bahaar/widgets/map/geojson_overlay_test_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,99 +36,88 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          //button to go to weather screen
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: const TextStyle(fontSize: 18, color: Color.fromARGB(255, 10, 97, 43)),
-              backgroundColor: const Color.fromARGB(255, 204, 231, 205),
+      appBar: AppBar(
+        title: Text(widget.title),
+        backgroundColor: const Color.fromARGB(255, 100, 181, 246),
+        foregroundColor: Colors.white,
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Weather Screen Button
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                textStyle: const TextStyle(fontSize: 18),
+                backgroundColor: const Color.fromARGB(255, 204, 231, 205),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Weather()),
+                );
+              },
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.cloud, color: Color.fromARGB(255, 10, 97, 43)),
+                  SizedBox(width: 12),
+                  Text(
+                    'Weather',
+                    style: TextStyle(color: Color.fromARGB(255, 10, 97, 43)),
+                  ),
+                ],
+              ),
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Weather()),
-              );
-            },
-            child: const Text('Go to Weather Screen'),
-          ),
-          const SizedBox(height: 20),
-          //button to go to weather screen
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: const TextStyle(fontSize: 18, color: Color.fromARGB(255, 10, 97, 43)),
-              backgroundColor: const Color.fromARGB(255, 204, 231, 205),
+
+            const SizedBox(height: 20),
+
+            // Integrated Map Button (Main Feature)
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                backgroundColor: const Color.fromARGB(255, 100, 181, 246),
+                elevation: 4,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const IntegratedMap()),
+                );
+              },
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.map, color: Colors.white, size: 28),
+                  SizedBox(width: 12),
+                  Text(
+                    'Map with Depth Colors',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Map()),
-              );
-            },
-            child: const Text('Go to Map Screen'),
-            
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: const TextStyle(fontSize: 18),
-              backgroundColor: const Color.fromARGB(255, 173, 216, 230),
+
+            const SizedBox(height: 30),
+
+            // Dev Tools Section
+            const Divider(indent: 40, endIndent: 40),
+            const SizedBox(height: 10),
+            const Text(
+              'Developer Tools',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const IntegratedMap()),
-              );
-            },
-            child: const Text('Integrated Map (Old Version)'),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              backgroundColor: const Color.fromARGB(255, 100, 181, 246),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const IntegratedMapRefactored()),
-              );
-            },
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.water, color: Colors.white),
-                SizedBox(width: 8),
-                Text('NEW: Depth Colors Map', style: TextStyle(color: Colors.white)),
-                SizedBox(width: 8),
-                Icon(Icons.star, color: Colors.amber, size: 20),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: const TextStyle(fontSize: 14),
-              backgroundColor: const Color.fromARGB(255, 230, 230, 230),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const GeoJsonOverlayTestPage(),
-                ),
-              );
-            },
-            child: const Text('GeoJSON Test (Dev)'),
-          )
-        ],
+            const SizedBox(height: 10),
+          ],
+        ),
       ),
     );
   }

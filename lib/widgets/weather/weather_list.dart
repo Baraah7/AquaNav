@@ -1,6 +1,6 @@
-import 'package:Bahaar/widgets/weather_card.dart';
+import 'package:Bahaar/widgets/weather/weather_card.dart';
 import 'package:flutter/material.dart';
-import '../models/weather/weather_response_model.dart';
+import '../../models/weather/weather_response_model.dart';
 
 class WeatherList extends StatelessWidget {
   final weather_response_model weatherData;
