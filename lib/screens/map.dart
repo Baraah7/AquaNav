@@ -4,6 +4,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:Bahaar/services/navigation_mask.dart';
+import 'package:Bahaar/widgets/map/depth_layer.dart';
+import 'package:Bahaar/utilities/map_constants.dart';
 
 class Map extends StatefulWidget {
   const Map({super.key});
@@ -21,6 +23,10 @@ class _MapScreen extends State<Map> {
   bool _mapReady = false;
   final NavigationMask _navigationMask = NavigationMask();
   bool _maskInitialized = false;
+
+  // Depth layer state
+  bool _showDepthLayer = true;
+  double _depthLayerOpacity = MapConstants.depthLayerOpacity;
 
   @override
   void initState() {
@@ -149,15 +155,24 @@ class _MapScreen extends State<Map> {
               },
             ),
             children: [
+              // Base layer - OpenStreetMap
               TileLayer(
-                urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.bahaar.bahaarapp',
-                maxZoom: 19,
-                subdomains: const ['a', 'b', 'c'],
+                urlTemplate: MapConstants.osmBaseUrl,
+                userAgentPackageName: MapConstants.userAgent,
+                maxZoom: MapConstants.osmMaxZoom.toDouble(),
+                subdomains: MapConstants.osmSubdomains,
                 additionalOptions: const {
                   'id': 'mapbox.streets',
                 },
               ),
+
+              // Depth layer - OpenSeaMap (bathymetric data)
+              DepthLayer(
+                isVisible: _showDepthLayer,
+                opacity: _depthLayerOpacity,
+              ),
+
+              // User location marker
               if (_locationData != null)
                 MarkerLayer(
                   markers: [
@@ -178,6 +193,27 @@ class _MapScreen extends State<Map> {
                 ),
             ],
           ),
+
+          // Depth layer control panel
+          Positioned(
+            top: 50,
+            left: 10,
+            child: DepthLayerControl(
+              isVisible: _showDepthLayer,
+              opacity: _depthLayerOpacity,
+              onVisibilityChanged: (value) {
+                setState(() {
+                  _showDepthLayer = value;
+                });
+              },
+              onOpacityChanged: (value) {
+                setState(() {
+                  _depthLayerOpacity = value;
+                });
+              },
+            ),
+          ),
+
           // Navigation mask status indicator
           Positioned(
             top: 50,
