@@ -118,14 +118,39 @@ class GeoJsonLayerBuilder {
     return polygons;
   }
 
-  /// Build all zone polygons (protected + fishing zones)
+  /// Build restricted area polygons from GeoJSON
+  List<Polygon> buildRestrictedAreas({bool isVisible = true}) {
+    if (!isVisible) return [];
+
+    final areas = getFeaturesByType('restricted_area');
+    final polygons = <Polygon>[];
+
+    for (final feature in areas) {
+      final coords = feature['geometry']['coordinates'][0] as List;
+
+      polygons.add(Polygon(
+        points: coords.map((coord) {
+          return LatLng(coord[1], coord[0]);
+        }).toList(),
+        color: Colors.red.withValues(alpha: 0.25),
+        borderStrokeWidth: 3.0,
+        borderColor: Colors.red.withValues(alpha: 0.9),
+      ));
+    }
+
+    return polygons;
+  }
+
+  /// Build all zone polygons (protected + fishing + restricted zones)
   List<Polygon> buildAllZones({
     bool showProtected = true,
     bool showFishing = true,
+    bool showRestricted = true,
   }) {
     return [
       ...buildProtectedZones(isVisible: showProtected),
       ...buildFishingZones(isVisible: showFishing),
+      ...buildRestrictedAreas(isVisible: showRestricted),
     ];
   }
 
@@ -150,6 +175,7 @@ class GeoJsonMapLayers extends StatelessWidget {
   final bool showShippingLanes;
   final bool showProtectedZones;
   final bool showFishingZones;
+  final bool showRestrictedAreas;
 
   const GeoJsonMapLayers({
     super.key,
@@ -158,6 +184,7 @@ class GeoJsonMapLayers extends StatelessWidget {
     this.showShippingLanes = true,
     this.showProtectedZones = true,
     this.showFishingZones = true,
+    this.showRestrictedAreas = true,
   });
 
   @override
@@ -169,6 +196,7 @@ class GeoJsonMapLayers extends StatelessWidget {
           polygons: builder.buildAllZones(
             showProtected: showProtectedZones,
             showFishing: showFishingZones,
+            showRestricted: showRestrictedAreas,
           ),
         ),
         // Polylines (middle layer)

@@ -7,9 +7,19 @@ import 'package:location/location.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:Bahaar/services/navigation_mask.dart';
 import 'package:Bahaar/services/map_layer_manager.dart';
+import 'package:Bahaar/services/marina_data_service.dart';
+import 'package:Bahaar/services/osrm_routing_service.dart';
+import 'package:Bahaar/services/marine_pathfinding_service.dart';
+import 'package:Bahaar/services/hybrid_route_coordinator.dart';
+import 'package:Bahaar/services/navigation_session_manager.dart';
+import 'package:Bahaar/models/navigation/marina_model.dart';
+import 'package:Bahaar/models/navigation/route_model.dart';
 import 'package:Bahaar/widgets/map/enhanced_depth_layer.dart';
 import 'package:Bahaar/widgets/map/geojson_layers.dart';
 import 'package:Bahaar/widgets/map/layer_control_panel.dart';
+import 'package:Bahaar/widgets/navigation/marina_marker_layer.dart';
+import 'package:Bahaar/widgets/navigation/route_polyline_layer.dart';
+import 'package:Bahaar/widgets/navigation/active_navigation_overlay.dart';
 import 'package:Bahaar/utilities/map_constants.dart';
 
 /// Integrated map with clean architecture and enhanced depth visualization
@@ -32,7 +42,14 @@ class _IntegratedMapState extends State<IntegratedMap> {
   final MapController _mapController = MapController();
   final Location _location = Location();
   final NavigationMask _navigationMask = NavigationMask();
+  final MarinaDataService _marinaService = MarinaDataService();
   late final MapLayerManager _layerManager;
+
+  // Routing services
+  late final OsrmRoutingService _osrmService;
+  late final MarinePathfindingService _marineService;
+  late final HybridRouteCoordinator _routeCoordinator;
+  NavigationSessionManager? _navigationManager;
 
   // State
   bool _mapReady = false;
@@ -45,6 +62,15 @@ class _IntegratedMapState extends State<IntegratedMap> {
   // GeoJSON data
   GeoJsonLayerBuilder? _geoJsonBuilder;
 
+  // Marina data
+  Marina? _selectedMarina;
+  bool _showMarinas = true;
+
+  // Navigation state
+  NavigationRoute? _currentRoute;
+  LatLng? _destinationPoint;
+  bool _isCalculatingRoute = false;
+
   @override
   void initState() {
     super.initState();
@@ -52,10 +78,52 @@ class _IntegratedMapState extends State<IntegratedMap> {
     _initLocation();
     _initNavigationMask();
     _loadGeoJson();
+    _initMarinas();
+    _initRoutingServices();
+  }
+
+  Future<void> _initRoutingServices() async {
+    try {
+      // Wait for dependencies to initialize
+      while (!_maskInitialized || !_marinaService.isInitialized || _geoJsonBuilder == null) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
+      _osrmService = OsrmRoutingService();
+      _marineService = MarinePathfindingService(_navigationMask);
+      _routeCoordinator = HybridRouteCoordinator(
+        osrmService: _osrmService,
+        marineService: _marineService,
+        marinaService: _marinaService,
+        navigationMask: _navigationMask,
+        geoJsonBuilder: _geoJsonBuilder!,
+      );
+
+      // Initialize navigation session manager
+      _navigationManager = NavigationSessionManager(
+        location: _location,
+        routeCoordinator: _routeCoordinator,
+      );
+
+      // Listen to navigation state changes
+      _navigationManager!.addListener(_onNavigationUpdate);
+
+      log('Routing services initialized successfully');
+    } catch (e) {
+      log('Error initializing routing services: $e');
+    }
+  }
+
+  void _onNavigationUpdate() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _navigationManager?.removeListener(_onNavigationUpdate);
+    _navigationManager?.dispose();
     _layerManager.dispose();
     super.dispose();
   }
@@ -73,6 +141,23 @@ class _IntegratedMapState extends State<IntegratedMap> {
       }
     } catch (e) {
       log('Error initializing navigation mask: $e');
+    }
+  }
+
+  Future<void> _initMarinas() async {
+    try {
+      // Wait for navigation mask to initialize first
+      while (!_maskInitialized) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
+      await _marinaService.initialize(_navigationMask);
+      if (mounted) {
+        setState(() {});
+        log('Marina service initialized: ${_marinaService.marinaCount} marinas loaded');
+      }
+    } catch (e) {
+      log('Error initializing marina service: $e');
     }
   }
 
@@ -157,27 +242,188 @@ class _IntegratedMapState extends State<IntegratedMap> {
   void _handleMapTap(TapPosition tapPosition, LatLng point) {
     if (!_maskInitialized) return;
 
+    // If there's already a route, tapping doesn't do anything
+    // User must clear the route first using the navigation button
+    if (_currentRoute != null) return;
+
     final isNavigable = _navigationMask.isPointNavigable(point);
     log('Tapped location (${point.latitude}, ${point.longitude}): ${isNavigable ? "Water" : "Land"}');
 
-    if (!isNavigable) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('This location is on land. Tap on water for navigation.'),
-          duration: const Duration(seconds: 2),
-          backgroundColor: Colors.orange,
-          action: SnackBarAction(
-            label: 'Find Water',
-            textColor: Colors.white,
-            onPressed: () {
-              final nearestWater = _navigationMask.findNearestWaterPoint(point);
-              if (nearestWater != null) {
-                _mapController.move(nearestWater, _mapController.camera.zoom);
-                log('Moved to nearest water: ${nearestWater.latitude}, ${nearestWater.longitude}');
-              }
-            },
-          ),
+    // Calculate route to tapped location
+    if (_locationData != null) {
+      _calculateRoute(point);
+    } else {
+      _showMessage('Location not available', Colors.orange);
+    }
+  }
+
+  void _handleMarinaTapped(Marina marina) {
+    setState(() {
+      _selectedMarina = marina;
+    });
+    log('Marina tapped: ${marina.name}');
+
+    // Center map on marina
+    _mapController.move(marina.location, 15.0);
+  }
+
+  // ============================================================
+  // Route Calculation Methods
+  // ============================================================
+
+  Future<void> _calculateRoute(LatLng destination) async {
+    if (_locationData == null) {
+      _showMessage('Location not available', Colors.orange);
+      return;
+    }
+
+    setState(() {
+      _isCalculatingRoute = true;
+      _destinationPoint = destination;
+      _currentRoute = null;
+    });
+
+    try {
+      final origin = LatLng(
+        _locationData!.latitude ?? MapConstants.defaultLatitude,
+        _locationData!.longitude ?? MapConstants.defaultLongitude,
+      );
+
+      log('Calculating route from $origin to $destination');
+
+      final route = await _routeCoordinator.calculateRoute(
+        origin: origin,
+        destination: destination,
+      );
+
+      if (route != null) {
+        setState(() {
+          _currentRoute = route;
+          _isCalculatingRoute = false;
+        });
+
+        _showMessage('Route calculated: ${_formatDistance(route.totalDistance)}', Colors.green);
+
+        // Fit route bounds
+        _fitRouteBounds(route);
+      } else {
+        setState(() {
+          _isCalculatingRoute = false;
+        });
+        _showMessage('Could not find a route', Colors.red);
+      }
+    } catch (e) {
+      log('Error calculating route: $e');
+      setState(() {
+        _isCalculatingRoute = false;
+      });
+      _showMessage('Error calculating route: $e', Colors.red);
+    }
+  }
+
+  void _clearRoute() {
+    setState(() {
+      _currentRoute = null;
+      _destinationPoint = null;
+      _selectedMarina = null;
+    });
+  }
+
+  void _fitRouteBounds(NavigationRoute route) {
+    final points = route.geometry;
+    if (points.isEmpty) return;
+
+    double minLat = points.first.latitude;
+    double maxLat = points.first.latitude;
+    double minLon = points.first.longitude;
+    double maxLon = points.first.longitude;
+
+    for (final point in points) {
+      if (point.latitude < minLat) minLat = point.latitude;
+      if (point.latitude > maxLat) maxLat = point.latitude;
+      if (point.longitude < minLon) minLon = point.longitude;
+      if (point.longitude > maxLon) maxLon = point.longitude;
+    }
+
+    _mapController.fitCamera(
+      CameraFit.bounds(
+        bounds: LatLngBounds(
+          LatLng(minLat, minLon),
+          LatLng(maxLat, maxLon),
         ),
+        padding: const EdgeInsets.all(50),
+      ),
+    );
+  }
+
+  void _showMessage(String message, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  String _formatDistance(double meters) {
+    if (meters < 1000) {
+      return '${meters.round()} m';
+    } else {
+      return '${(meters / 1000).toStringAsFixed(1)} km';
+    }
+  }
+
+  // ============================================================
+  // Navigation Session Methods
+  // ============================================================
+
+  Future<void> _startNavigation() async {
+    if (_currentRoute == null || _navigationManager == null) return;
+
+    try {
+      log('Starting navigation session');
+      await _navigationManager!.startNavigation(_currentRoute!);
+      _showMessage('Navigation started', Colors.green);
+
+      // Center on current location
+      if (_locationData != null) {
+        _mapController.move(
+          LatLng(
+            _locationData!.latitude ?? MapConstants.defaultLatitude,
+            _locationData!.longitude ?? MapConstants.defaultLongitude,
+          ),
+          16,
+        );
+      }
+    } catch (e) {
+      log('Error starting navigation: $e');
+      _showMessage('Failed to start navigation: $e', Colors.red);
+    }
+  }
+
+  void _endNavigation() {
+    if (_navigationManager == null) return;
+
+    log('Ending navigation session');
+    _navigationManager!.cancelNavigation();
+    _clearRoute();
+  }
+
+  void _recenterOnLocation() {
+    if (_navigationManager?.session?.currentLocation != null) {
+      _mapController.move(
+        _navigationManager!.session!.currentLocation!,
+        16,
+      );
+    } else if (_locationData != null) {
+      _mapController.move(
+        LatLng(
+          _locationData!.latitude ?? MapConstants.defaultLatitude,
+          _locationData!.longitude ?? MapConstants.defaultLongitude,
+        ),
+        16,
       );
     }
   }
@@ -235,6 +481,7 @@ class _IntegratedMapState extends State<IntegratedMap> {
                 showShippingLanes: _layerManager.showShippingLanes,
                 showProtectedZones: _layerManager.showProtectedZones,
                 showFishingZones: _layerManager.showFishingZones,
+                showRestrictedAreas: _layerManager.showRestrictedAreas,
               );
             },
           ),
@@ -243,6 +490,59 @@ class _IntegratedMapState extends State<IntegratedMap> {
         if (_maskInitialized && _layerManager.showMaskOverlay)
           PolygonLayer(
             polygons: _buildMaskOverlay(),
+          ),
+
+        // Marina markers
+        if (_marinaService.isInitialized && _showMarinas)
+          MarinaMarkerLayer(
+            marinas: _marinaService.getAllMarinas(),
+            highlightedMarinaId: _selectedMarina?.id,
+            onMarinaTapped: _handleMarinaTapped,
+          ),
+
+        // Route visualization (show active segment if navigating)
+        if (_currentRoute != null)
+          RoutePolylineLayer(
+            route: _currentRoute!,
+            activeSegmentIndex: _navigationManager?.session?.currentSegmentIndex,
+            showMarkers: true,
+          ),
+
+        // Breadcrumb trail (during active navigation)
+        if (_navigationManager?.session != null &&
+            _navigationManager!.session!.breadcrumbs.length > 1)
+          PolylineLayer(
+            polylines: [
+              Polyline(
+                points: _navigationManager!.session!.breadcrumbs,
+                strokeWidth: 3.0,
+                color: Colors.purple.withValues(alpha: 0.6),
+              ),
+            ],
+          ),
+
+        // Destination marker
+        if (_destinationPoint != null && _currentRoute == null)
+          MarkerLayer(
+            markers: [
+              Marker(
+                point: _destinationPoint!,
+                width: 40,
+                height: 40,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 3),
+                  ),
+                  child: const Icon(
+                    Icons.place,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ],
           ),
 
         // User location marker
@@ -452,6 +752,92 @@ class _IntegratedMapState extends State<IntegratedMap> {
               top: 110,
               left: 10,
               child: DepthLegend(),
+            ),
+
+          // Marina info card (when marina is selected)
+          if (_selectedMarina != null && _currentRoute == null)
+            Positioned(
+              bottom: 80,
+              left: 16,
+              right: 16,
+              child: MarinaInfoCard(
+                marina: _selectedMarina!,
+                onClose: () => setState(() => _selectedMarina = null),
+                onNavigate: () {
+                  _calculateRoute(_selectedMarina!.location);
+                },
+              ),
+            ),
+
+          // Route stats card (when route is calculated but not navigating)
+          if (_currentRoute != null && !(_navigationManager?.isNavigating ?? false))
+            Positioned(
+              bottom: 80,
+              left: 16,
+              right: 16,
+              child: RouteStatsCard(
+                route: _currentRoute!,
+                onCancel: _clearRoute,
+                onStartNavigation: _startNavigation,
+              ),
+            ),
+
+          // Active navigation overlay (when navigating)
+          if (_navigationManager?.session != null)
+            ActiveNavigationOverlay(
+              session: _navigationManager!.session!,
+              onEndNavigation: _endNavigation,
+              onRecenter: _recenterOnLocation,
+              isRecalculating: _navigationManager!.isRecalculating,
+            ),
+
+          // Navigation FAB button (top left, below depth legend)
+          Positioned(
+            top: 130,
+            left: 10,
+            child: FloatingActionButton.small(
+              heroTag: 'navigation',
+              onPressed: _maskInitialized && _locationData != null
+                  ? () {
+                      if (_currentRoute != null) {
+                        _clearRoute();
+                      } else {
+                        _showMessage('Tap on the map to set destination', Colors.blue);
+                      }
+                    }
+                  : null,
+              backgroundColor: _currentRoute != null ? Colors.orange : Colors.blue,
+              child: Icon(
+                _currentRoute != null ? Icons.close : Icons.navigation,
+                color: Colors.white,
+              ),
+            ),
+          ),
+
+          // Route calculation loading indicator
+          if (_isCalculatingRoute)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.5),
+                child: const Center(
+                  child: Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text(
+                            'Calculating route...',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
 
           // Zoom controls (bottom right)

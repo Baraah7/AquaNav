@@ -17,6 +17,7 @@ class MapLayerManager extends ChangeNotifier {
   bool _showShippingLanes = true;
   bool _showProtectedZones = true;
   bool _showFishingZones = true;
+  bool _showRestrictedAreas = true;
 
   // Navigation mask
   bool _showMaskOverlay = false;
@@ -34,6 +35,7 @@ class MapLayerManager extends ChangeNotifier {
   bool get showShippingLanes => _showShippingLanes;
   bool get showProtectedZones => _showProtectedZones;
   bool get showFishingZones => _showFishingZones;
+  bool get showRestrictedAreas => _showRestrictedAreas;
   bool get showMaskOverlay => _showMaskOverlay;
   bool get showLayerControls => _showLayerControls;
 
@@ -101,6 +103,13 @@ class MapLayerManager extends ChangeNotifier {
     }
   }
 
+  set showRestrictedAreas(bool value) {
+    if (_showRestrictedAreas != value) {
+      _showRestrictedAreas = value;
+      notifyListeners();
+    }
+  }
+
   set showMaskOverlay(bool value) {
     if (_showMaskOverlay != value) {
       _showMaskOverlay = value;
@@ -121,6 +130,7 @@ class MapLayerManager extends ChangeNotifier {
     _showShippingLanes = value;
     _showProtectedZones = value;
     _showFishingZones = value;
+    _showRestrictedAreas = value;
     notifyListeners();
   }
 
@@ -135,6 +145,7 @@ class MapLayerManager extends ChangeNotifier {
     _showShippingLanes = true;
     _showProtectedZones = true;
     _showFishingZones = true;
+    _showRestrictedAreas = true;
     _showMaskOverlay = false;
     _showLayerControls = false;
     notifyListeners();
