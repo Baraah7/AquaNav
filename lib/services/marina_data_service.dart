@@ -133,6 +133,60 @@ class MarinaDataService {
     return marinas;
   }
 
+  /// Find optimal shore point for land-to-sea routing
+  ///
+  /// Selects marina that minimizes:
+  /// - Land distance (origin → marina)
+  /// - Marine distance estimate (marina → sea destination)
+  ///
+  /// This avoids selecting marinas that are land-close but sea-far
+  Marina? findBestShorePoint({
+    required LatLng landOrigin,
+    required LatLng seaDestination,
+    double maxSearchRadius = 50000,  // 50km
+  }) {
+    if (!_isInitialized || _marinas == null) return null;
+
+    // Filter accessible marinas within search radius
+    final candidates = _marinas!.where((marina) {
+      final landDistance = _navigationMask!.calculateDistance(
+        landOrigin,
+        marina.location,
+      );
+      return landDistance <= maxSearchRadius &&
+          (marina.accessType == MarinaAccessType.public ||
+           marina.accessType == MarinaAccessType.permissive);
+    }).toList();
+
+    if (candidates.isEmpty) return null;
+
+    // Rank by combined score: landDistance + marineHeuristic
+    Marina? bestMarina;
+    double bestScore = double.infinity;
+
+    for (final marina in candidates) {
+      final landDist = _navigationMask!.calculateDistance(
+        landOrigin,
+        marina.location,
+      );
+      final marineDist = _navigationMask!.calculateDistance(
+        marina.location,
+        seaDestination,
+      );
+
+      // Weighted score: prioritize shorter land distance
+      // (land driving is slower than marine travel)
+      final score = landDist * 1.5 + marineDist;
+
+      if (score < bestScore) {
+        bestScore = score;
+        bestMarina = marina;
+      }
+    }
+
+    return bestMarina;
+  }
+
   /// Check if a marina is accessible (public or permissive)
   bool isMarinaAccessible(Marina marina) {
     return marina.accessType == MarinaAccessType.public ||

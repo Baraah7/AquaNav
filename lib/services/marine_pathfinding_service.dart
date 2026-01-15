@@ -171,23 +171,22 @@ class MarinePathfindingService {
         // Check if neighbor is navigable water
         if (!_isCellNavigable(neighbor)) continue;
 
+        // HARD BLOCK: Skip cells in restricted areas (no penalty, absolute block)
+        if (_isInRestrictedArea(neighbor, restrictedAreas)) continue;
+
         // Calculate movement cost
         final moveCost = _getMoveCost(current.cell, neighbor);
         final tentativeGScore = gScores[current.cell]! + moveCost;
 
-        // Apply penalties
-        final restrictedPenalty = _getRestrictionPenalty(neighbor, restrictedAreas);
-        final totalCost = tentativeGScore + restrictedPenalty;
-
         // Update if this is a better path
-        if (!gScores.containsKey(neighbor) || totalCost < gScores[neighbor]!) {
+        if (!gScores.containsKey(neighbor) || tentativeGScore < gScores[neighbor]!) {
           cameFrom[neighbor] = current.cell;
-          gScores[neighbor] = totalCost;
+          gScores[neighbor] = tentativeGScore;
 
           // Add to open set if not already there
           openSet.add(AStarNode(
             cell: neighbor,
-            gScore: totalCost,
+            gScore: tentativeGScore,
             hScore: _heuristic(neighbor, goal),
           ));
         }
@@ -215,17 +214,17 @@ class MarinePathfindingService {
         : 1.0;
   }
 
-  /// Get penalty for entering a restricted area
-  double _getRestrictionPenalty(GridCell cell, List<Polygon> restrictedAreas) {
+  /// Check if a cell is inside any restricted area (HARD BLOCK)
+  bool _isInRestrictedArea(GridCell cell, List<Polygon> restrictedAreas) {
     final point = _cellToLatLng(cell);
 
     for (final area in restrictedAreas) {
       if (_isPointInPolygon(point, area.points)) {
-        return NavigationConstants.aStarRestrictedPenalty;
+        return true;  // Cell is in restricted area - block it
       }
     }
 
-    return 0.0;
+    return false;  // Cell is safe to use
   }
 
   /// Check if a cell is navigable (on water and in bounds)

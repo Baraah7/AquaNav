@@ -70,6 +70,90 @@ class HybridRouteCoordinator {
     return route;
   }
 
+  /// Calculate strict land-to-sea route (enforced pattern)
+  ///
+  /// REQUIRED ROUTING PATTERN:
+  /// 1. Land origin (never water)
+  /// 2. Auto-selected shore/port/marina
+  /// 3. Sea destination (never land)
+  ///
+  /// Returns null if:
+  /// - No suitable marina found
+  /// - Land routing fails
+  /// - Marine routing fails
+  Future<NavigationRoute?> calculateLandToSeaRoute({
+    required LatLng landOrigin,
+    required LatLng seaDestination,
+  }) async {
+    log('Calculating strict land-to-sea route');
+    log('  Land origin: $landOrigin');
+    log('  Sea destination: $seaDestination');
+
+    // VALIDATION: Enforce routing rules
+    if (_navigationMask.isPointNavigable(landOrigin)) {
+      log('ERROR: Origin is on water, must be on land');
+      return null;
+    }
+
+    if (!_navigationMask.isPointNavigable(seaDestination)) {
+      log('ERROR: Destination is on land, must be on water');
+      return null;
+    }
+
+    // 1. Find optimal shore point (marina/port)
+    final shorePoint = _marinaService.findBestShorePoint(
+      landOrigin: landOrigin,
+      seaDestination: seaDestination,
+    );
+
+    if (shorePoint == null) {
+      log('ERROR: No suitable shore point found within search radius');
+      return null;
+    }
+
+    log('Selected shore point: ${shorePoint.name} at ${shorePoint.location}');
+
+    // 2. Calculate land segment: origin → shore
+    log('Calculating land segment: $landOrigin → ${shorePoint.location}');
+    final landSegment = await _osrmService.getRoute(
+      origin: landOrigin,
+      destination: shorePoint.location,
+      profile: OsrmProfile.driving,
+    );
+
+    if (landSegment == null) {
+      log('ERROR: Failed to calculate land route to shore point');
+      return null;
+    }
+
+    log('Land segment: ${landSegment.distance}m, ${landSegment.duration}s');
+
+    // 3. Calculate marine segment: shore → sea destination
+    log('Calculating marine segment: ${shorePoint.location} → $seaDestination');
+    final marineSegment = await _marineService.findMarineRoute(
+      origin: shorePoint.location,
+      destination: seaDestination,
+      restrictedAreas: _getRestrictedAreas(),
+    );
+
+    if (marineSegment == null) {
+      log('ERROR: Failed to calculate marine route from shore point');
+      return null;
+    }
+
+    log('Marine segment: ${marineSegment.distance}m, ${marineSegment.duration}s');
+
+    // 4. Assemble complete route
+    final route = _buildRouteFromSegments(
+      landOrigin,
+      seaDestination,
+      [landSegment, marineSegment],
+    );
+
+    log('Route assembled: ${route.totalDistance}m total');
+    return route;
+  }
+
   /// Calculate a hybrid route with marina handoff
   Future<NavigationRoute?> _calculateHybridRoute(
     LatLng origin,
