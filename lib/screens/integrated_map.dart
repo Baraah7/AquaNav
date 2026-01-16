@@ -60,8 +60,8 @@ class _IntegratedMapState extends State<IntegratedMap> {
   bool _maskInitialized = false;
   bool _showDepthLegend = false;
 
-  // Admin edit state - track painted cells for visualization
-  final Set<({int row, int col})> _paintedCells = {};
+  // Admin edit state - track painted cells with their brush type for visualization
+  final Map<({int row, int col}), AdminBrushType> _paintedCells = {};
 
   // GeoJSON data
   GeoJsonLayerBuilder? _geoJsonBuilder;
@@ -306,7 +306,8 @@ class _IntegratedMapState extends State<IntegratedMap> {
 
   void _handleAdminPaint(LatLng point) {
     // Water = 1, Land/Eraser = 0
-    final value = _layerManager.brushType == AdminBrushType.water ? 1 : 0;
+    final brushType = _layerManager.brushType;
+    final value = brushType == AdminBrushType.water ? 1 : 0;
     final painted = _navigationMask.paintBrush(
       point.longitude,
       point.latitude,
@@ -316,7 +317,10 @@ class _IntegratedMapState extends State<IntegratedMap> {
 
     if (painted.isNotEmpty) {
       setState(() {
-        _paintedCells.addAll(painted);
+        // Store each cell with its brush type
+        for (final cell in painted) {
+          _paintedCells[cell] = brushType;
+        }
       });
     }
   }
@@ -993,27 +997,29 @@ class _IntegratedMapState extends State<IntegratedMap> {
     final polygons = <Polygon>[];
     final resolution = _navigationMask.resolution;
     final halfRes = resolution / 2;
-    final brushType = _layerManager.brushType;
 
-    // Determine color based on brush type
-    Color fillColor;
-    Color borderColor;
-    switch (brushType) {
-      case AdminBrushType.water:
-        fillColor = Colors.blue.withValues(alpha: 0.5);
-        borderColor = Colors.blue.withValues(alpha: 0.8);
-        break;
-      case AdminBrushType.land:
-        fillColor = Colors.brown.withValues(alpha: 0.5);
-        borderColor = Colors.brown.withValues(alpha: 0.8);
-        break;
-      case AdminBrushType.eraser:
-        fillColor = Colors.grey.withValues(alpha: 0.5);
-        borderColor = Colors.grey.withValues(alpha: 0.8);
-        break;
-    }
+    for (final entry in _paintedCells.entries) {
+      final cell = entry.key;
+      final brushType = entry.value;
 
-    for (final cell in _paintedCells) {
+      // Determine color based on the brush type used when painting this cell
+      Color fillColor;
+      Color borderColor;
+      switch (brushType) {
+        case AdminBrushType.water:
+          fillColor = Colors.blue.withValues(alpha: 0.5);
+          borderColor = Colors.blue.withValues(alpha: 0.8);
+          break;
+        case AdminBrushType.land:
+          fillColor = Colors.brown.withValues(alpha: 0.5);
+          borderColor = Colors.brown.withValues(alpha: 0.8);
+          break;
+        case AdminBrushType.eraser:
+          fillColor = Colors.grey.withValues(alpha: 0.5);
+          borderColor = Colors.grey.withValues(alpha: 0.8);
+          break;
+      }
+
       final center = _navigationMask.gridToCoords(cell.row, cell.col);
       polygons.add(
         Polygon(
