@@ -25,6 +25,11 @@ class MapLayerManager extends ChangeNotifier {
   // UI control
   bool _showLayerControls = false;
 
+  // Admin edit mode
+  bool _isAdminEditMode = false;
+  AdminBrushType _brushType = AdminBrushType.water;
+  int _brushRadius = 1; // 1-5 cells
+
   // Getters
   bool get showBaseMap => _showBaseMap;
   bool get showDepthLayer => _showDepthLayer;
@@ -38,6 +43,9 @@ class MapLayerManager extends ChangeNotifier {
   bool get showRestrictedAreas => _showRestrictedAreas;
   bool get showMaskOverlay => _showMaskOverlay;
   bool get showLayerControls => _showLayerControls;
+  bool get isAdminEditMode => _isAdminEditMode;
+  AdminBrushType get brushType => _brushType;
+  int get brushRadius => _brushRadius;
 
   // Setters with notification
   set showBaseMap(bool value) {
@@ -124,6 +132,28 @@ class MapLayerManager extends ChangeNotifier {
     }
   }
 
+  set isAdminEditMode(bool value) {
+    if (_isAdminEditMode != value) {
+      _isAdminEditMode = value;
+      notifyListeners();
+    }
+  }
+
+  set brushType(AdminBrushType value) {
+    if (_brushType != value) {
+      _brushType = value;
+      notifyListeners();
+    }
+  }
+
+  set brushRadius(int value) {
+    final clamped = value.clamp(1, 5);
+    if (_brushRadius != clamped) {
+      _brushRadius = clamped;
+      notifyListeners();
+    }
+  }
+
   /// Toggle all GeoJSON sub-layers on/off
   void toggleAllGeoJsonLayers(bool value) {
     _showFishingSpots = value;
@@ -186,4 +216,13 @@ extension DepthVisualizationTypeExtension on DepthVisualizationType {
         return 'Depth colors with nautical overlay';
     }
   }
+}
+
+/// Brush types for admin mask editing
+enum AdminBrushType {
+  /// Paint water cells (navigable, value = 1)
+  water,
+
+  /// Paint land cells (blocked, value = 0)
+  land,
 }

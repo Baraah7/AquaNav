@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:latlong2/latlong.dart';
 import 'dart:math';
+import 'package:Bahaar/services/mask_storage_service.dart';
 
 /// Navigation mask service for validating routes against Bahrain's coastline
 /// Prevents routing through land areas using pre-generated binary mask data
@@ -21,35 +22,94 @@ class NavigationMask {
   late int _height;
   late double _resolution;
 
+  // Storage service for persistence
+  final MaskStorageService _storageService = MaskStorageService();
+
+  // Track if mask has unsaved changes
+  bool _hasUnsavedChanges = false;
+
+  // Track if using user-modified mask
+  bool _isUserModified = false;
+
   /// Check if the mask has been initialized
   bool get isInitialized => _isInitialized;
+
+  /// Check if there are unsaved changes
+  bool get hasUnsavedChanges => _hasUnsavedChanges;
+
+  /// Check if mask is user-modified
+  bool get isUserModified => _isUserModified;
+
+  /// Get grid width
+  int get width => _width;
+
+  /// Get grid height
+  int get height => _height;
+
+  /// Get grid resolution in degrees
+  double get resolution => _resolution;
+
+  /// Get minimum longitude
+  double get minLon => _minLon;
+
+  /// Get maximum longitude
+  double get maxLon => _maxLon;
+
+  /// Get minimum latitude
+  double get minLat => _minLat;
+
+  /// Get maximum latitude
+  double get maxLat => _maxLat;
+
+  /// Get raw mask data (for visualization)
+  Uint8List get maskData => _maskData;
 
   /// Initialize the navigation mask by loading binary data and metadata
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
-      // Load metadata
+      // Load asset metadata (needed for default values and reset)
       final metadataJson = await rootBundle.loadString('assets/navigation/mask_metadata.json');
       _metadata = json.decode(metadataJson);
 
-      // Parse metadata
-      _minLon = _metadata['bbox']['min_lon'].toDouble();
-      _minLat = _metadata['bbox']['min_lat'].toDouble();
-      _maxLon = _metadata['bbox']['max_lon'].toDouble();
-      _maxLat = _metadata['bbox']['max_lat'].toDouble();
-      _width = _metadata['grid']['width'];
-      _height = _metadata['grid']['height'];
-      _resolution = _metadata['grid']['resolution_degrees'].toDouble();
+      // Try to load user's modified mask first (with its own metadata)
+      final userMask = await _storageService.loadUserMask();
+      if (userMask != null) {
+        // Use user's saved dimensions
+        _maskData = userMask.maskData;
+        _width = userMask.width;
+        _height = userMask.height;
+        _minLon = userMask.minLon;
+        _maxLon = userMask.maxLon;
+        _minLat = userMask.minLat;
+        _maxLat = userMask.maxLat;
+        _resolution = userMask.resolution;
+        _isUserModified = true;
 
-      // Load binary mask data
-      final ByteData byteData = await rootBundle.load('assets/navigation/bahrain_navigation_mask.bin');
-      _maskData = byteData.buffer.asUint8List();
+        // Update metadata to match
+        _metadata['bbox']['min_lon'] = _minLon;
+        _metadata['bbox']['max_lon'] = _maxLon;
+        _metadata['bbox']['min_lat'] = _minLat;
+        _metadata['bbox']['max_lat'] = _maxLat;
+        _metadata['grid']['width'] = _width;
+        _metadata['grid']['height'] = _height;
+      } else {
+        // Fall back to asset mask with original dimensions
+        _minLon = _metadata['bbox']['min_lon'].toDouble();
+        _minLat = _metadata['bbox']['min_lat'].toDouble();
+        _maxLon = _metadata['bbox']['max_lon'].toDouble();
+        _maxLat = _metadata['bbox']['max_lat'].toDouble();
+        _width = _metadata['grid']['width'];
+        _height = _metadata['grid']['height'];
+        _resolution = _metadata['grid']['resolution_degrees'].toDouble();
+
+        final ByteData byteData = await rootBundle.load('assets/navigation/bahrain_navigation_mask.bin');
+        _maskData = Uint8List.fromList(byteData.buffer.asUint8List());
+      }
 
       _isInitialized = true;
-      // Navigation mask initialized successfully
     } catch (e) {
-      // Error initializing navigation mask
       rethrow;
     }
   }
@@ -210,6 +270,244 @@ class NavigationMask {
       throw StateError('NavigationMask not initialized. Call initialize() first.');
     }
     return Map.from(_metadata);
+  }
+
+  /// Get all water cells as LatLng polygons for visualization
+  /// Returns a list of polygons representing water cell boundaries
+  List<List<LatLng>> getWaterCellPolygons() {
+    if (!_isInitialized) return [];
+
+    final polygons = <List<LatLng>>[];
+    final halfRes = _resolution / 2;
+
+    for (int row = 0; row < _height; row++) {
+      for (int col = 0; col < _width; col++) {
+        final index = row * _width + col;
+        if (index < _maskData.length && _maskData[index] == 1) {
+          final center = _gridToCoords(row, col);
+          polygons.add([
+            LatLng(center.latitude - halfRes, center.longitude - halfRes),
+            LatLng(center.latitude + halfRes, center.longitude - halfRes),
+            LatLng(center.latitude + halfRes, center.longitude + halfRes),
+            LatLng(center.latitude - halfRes, center.longitude + halfRes),
+          ]);
+        }
+      }
+    }
+    return polygons;
+  }
+
+  /// Get boundary cells (water cells adjacent to land or edge)
+  /// More efficient for outline visualization
+  List<LatLng> getBoundaryWaterCells() {
+    if (!_isInitialized) return [];
+
+    final boundaryCells = <LatLng>[];
+
+    for (int row = 0; row < _height; row++) {
+      for (int col = 0; col < _width; col++) {
+        final index = row * _width + col;
+        if (index >= _maskData.length || _maskData[index] != 1) continue;
+
+        // Check if this water cell is on the boundary
+        bool isBoundary = false;
+
+        // Check all 4 neighbors
+        final neighbors = [
+          (row - 1, col), // top
+          (row + 1, col), // bottom
+          (row, col - 1), // left
+          (row, col + 1), // right
+        ];
+
+        for (final (nRow, nCol) in neighbors) {
+          if (nRow < 0 || nRow >= _height || nCol < 0 || nCol >= _width) {
+            // Edge of grid
+            isBoundary = true;
+            break;
+          }
+          final nIndex = nRow * _width + nCol;
+          if (nIndex >= _maskData.length || _maskData[nIndex] == 0) {
+            // Adjacent to land
+            isBoundary = true;
+            break;
+          }
+        }
+
+        if (isBoundary) {
+          boundaryCells.add(_gridToCoords(row, col));
+        }
+      }
+    }
+    return boundaryCells;
+  }
+
+  // ============================================================
+  // Admin Editing Methods
+  // ============================================================
+
+  /// Convert geographic coordinates to grid indices (public for editing)
+  ({int? row, int? col}) coordsToGrid(double lon, double lat) {
+    return _coordsToGrid(lon, lat);
+  }
+
+  /// Convert grid indices to geographic coordinates (public for editing)
+  LatLng gridToCoords(int row, int col) {
+    return _gridToCoords(row, col);
+  }
+
+  /// Set a cell to water (1) or land (0)
+  bool setCellValue(int row, int col, int value) {
+    if (!_isInitialized) return false;
+    if (row < 0 || row >= _height || col < 0 || col >= _width) return false;
+    if (value != 0 && value != 1) return false;
+
+    final index = row * _width + col;
+    if (index >= _maskData.length) return false;
+
+    _maskData[index] = value;
+    _hasUnsavedChanges = true;
+    return true;
+  }
+
+  /// Set a cell at geographic coordinates to water (1) or land (0)
+  bool setCellAtCoords(double lon, double lat, int value) {
+    final grid = _coordsToGrid(lon, lat);
+    if (grid.row == null || grid.col == null) return false;
+    return setCellValue(grid.row!, grid.col!, value);
+  }
+
+  /// Paint cells in a circular radius (brush tool)
+  /// Returns list of cells that were painted
+  /// If painting outside bounds, the mask will be expanded
+  List<({int row, int col})> paintBrush(double lon, double lat, int radius, int value) {
+    final painted = <({int row, int col})>[];
+
+    // Check if we need to expand the mask
+    final needsExpansion = !isInBounds(lon, lat);
+    if (needsExpansion) {
+      _expandMaskToInclude(lon, lat, radius);
+    }
+
+    final center = _coordsToGrid(lon, lat);
+    if (center.row == null || center.col == null) return painted;
+
+    for (int dr = -radius; dr <= radius; dr++) {
+      for (int dc = -radius; dc <= radius; dc++) {
+        // Circular brush (not square)
+        if (dr * dr + dc * dc <= radius * radius) {
+          final row = center.row! + dr;
+          final col = center.col! + dc;
+          if (setCellValue(row, col, value)) {
+            painted.add((row: row, col: col));
+          }
+        }
+      }
+    }
+    return painted;
+  }
+
+  /// Expand the mask grid to include coordinates outside current bounds
+  void _expandMaskToInclude(double lon, double lat, int extraCells) {
+    if (!_isInitialized) return;
+
+    // Calculate new bounds with some padding
+    final padding = _resolution * (extraCells + 5); // Add extra padding
+    final newMinLon = lon < _minLon ? lon - padding : _minLon;
+    final newMaxLon = lon > _maxLon ? lon + padding : _maxLon;
+    final newMinLat = lat < _minLat ? lat - padding : _minLat;
+    final newMaxLat = lat > _maxLat ? lat + padding : _maxLat;
+
+    // Calculate new grid dimensions
+    final newWidth = ((newMaxLon - newMinLon) / _resolution).ceil() + 1;
+    final newHeight = ((newMaxLat - newMinLat) / _resolution).ceil() + 1;
+
+    // Create new mask data (default to land/0)
+    final newMaskData = Uint8List(newWidth * newHeight);
+
+    // Calculate offset for copying old data
+    final colOffset = (((_minLon - newMinLon) / _resolution)).round();
+    final rowOffset = (((newMaxLat - _maxLat) / _resolution)).round();
+
+    // Copy old mask data to new position
+    for (int oldRow = 0; oldRow < _height; oldRow++) {
+      for (int oldCol = 0; oldCol < _width; oldCol++) {
+        final oldIndex = oldRow * _width + oldCol;
+        final newRow = oldRow + rowOffset;
+        final newCol = oldCol + colOffset;
+
+        if (newRow >= 0 && newRow < newHeight && newCol >= 0 && newCol < newWidth) {
+          final newIndex = newRow * newWidth + newCol;
+          if (oldIndex < _maskData.length && newIndex < newMaskData.length) {
+            newMaskData[newIndex] = _maskData[oldIndex];
+          }
+        }
+      }
+    }
+
+    // Update mask properties
+    _maskData = newMaskData;
+    _minLon = newMinLon;
+    _maxLon = newMaxLon;
+    _minLat = newMinLat;
+    _maxLat = newMaxLat;
+    _width = newWidth;
+    _height = newHeight;
+    _hasUnsavedChanges = true;
+
+    // Update metadata
+    _metadata['bbox']['min_lon'] = newMinLon;
+    _metadata['bbox']['max_lon'] = newMaxLon;
+    _metadata['bbox']['min_lat'] = newMinLat;
+    _metadata['bbox']['max_lat'] = newMaxLat;
+    _metadata['grid']['width'] = newWidth;
+    _metadata['grid']['height'] = newHeight;
+  }
+
+  /// Save modifications to local storage
+  Future<bool> saveChanges() async {
+    if (!_hasUnsavedChanges) return true;
+    final success = await _storageService.saveUserMask(
+      _maskData,
+      width: _width,
+      height: _height,
+      minLon: _minLon,
+      maxLon: _maxLon,
+      minLat: _minLat,
+      maxLat: _maxLat,
+      resolution: _resolution,
+    );
+    if (success) {
+      _hasUnsavedChanges = false;
+      _isUserModified = true;
+    }
+    return success;
+  }
+
+  /// Reset to original asset mask
+  Future<bool> resetToOriginal() async {
+    final success = await _storageService.resetToAssetMask();
+    if (success) {
+      // Reload original metadata from asset
+      final metadataJson = await rootBundle.loadString('assets/navigation/mask_metadata.json');
+      _metadata = json.decode(metadataJson);
+
+      // Restore original dimensions
+      _minLon = _metadata['bbox']['min_lon'].toDouble();
+      _minLat = _metadata['bbox']['min_lat'].toDouble();
+      _maxLon = _metadata['bbox']['max_lon'].toDouble();
+      _maxLat = _metadata['bbox']['max_lat'].toDouble();
+      _width = _metadata['grid']['width'];
+      _height = _metadata['grid']['height'];
+      _resolution = _metadata['grid']['resolution_degrees'].toDouble();
+
+      // Reload from asset
+      final ByteData byteData = await rootBundle.load('assets/navigation/bahrain_navigation_mask.bin');
+      _maskData = Uint8List.fromList(byteData.buffer.asUint8List());
+      _hasUnsavedChanges = false;
+      _isUserModified = false;
+    }
+    return success;
   }
 }
 

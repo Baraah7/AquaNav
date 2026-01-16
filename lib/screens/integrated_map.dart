@@ -21,6 +21,7 @@ import 'package:Bahaar/widgets/navigation/marina_marker_layer.dart';
 import 'package:Bahaar/widgets/navigation/route_polyline_layer.dart';
 import 'package:Bahaar/widgets/navigation/active_navigation_overlay.dart';
 import 'package:Bahaar/utilities/map_constants.dart';
+import 'package:Bahaar/widgets/map/admin_edit_toolbar.dart';
 
 /// Integrated map with clean architecture and enhanced depth visualization
 ///
@@ -58,6 +59,9 @@ class _IntegratedMapState extends State<IntegratedMap> {
   LocationData? _locationData;
   bool _maskInitialized = false;
   bool _showDepthLegend = false;
+
+  // Admin edit state - track painted cells for visualization
+  final Set<({int row, int col})> _paintedCells = {};
 
   // GeoJSON data
   GeoJsonLayerBuilder? _geoJsonBuilder;
@@ -273,6 +277,12 @@ class _IntegratedMapState extends State<IntegratedMap> {
   void _handleMapTap(TapPosition tapPosition, LatLng point) {
     if (!_maskInitialized) return;
 
+    // Handle admin edit mode
+    if (_layerManager.isAdminEditMode) {
+      _handleAdminPaint(point);
+      return;
+    }
+
     // If there's already a route, tapping doesn't do anything
     if (_currentRoute != null) return;
 
@@ -291,6 +301,33 @@ class _IntegratedMapState extends State<IntegratedMap> {
       });
       _showMessage('Sea destination set. Select a port to start from.', Colors.blue);
       return;
+    }
+  }
+
+  void _handleAdminPaint(LatLng point) {
+    final value = _layerManager.brushType == AdminBrushType.water ? 1 : 0;
+    final painted = _navigationMask.paintBrush(
+      point.longitude,
+      point.latitude,
+      _layerManager.brushRadius,
+      value,
+    );
+
+    if (painted.isNotEmpty) {
+      setState(() {
+        _paintedCells.addAll(painted);
+      });
+    }
+  }
+
+  /// Convert screen position to LatLng for drag painting
+  LatLng? _screenToLatLng(Offset screenPosition) {
+    if (!_mapReady) return null;
+    try {
+      // Use flutter_map's offset to latlng conversion
+      return _mapController.camera.offsetToCrs(screenPosition);
+    } catch (e) {
+      return null;
     }
   }
 
@@ -610,10 +647,73 @@ class _IntegratedMapState extends State<IntegratedMap> {
   }
 
   // ============================================================
+  // Admin Edit Methods
+  // ============================================================
+
+  void _enterAdminEditMode() {
+    setState(() {
+      _layerManager.isAdminEditMode = true;
+      _layerManager.showMaskOverlay = true;
+      _paintedCells.clear();
+    });
+  }
+
+  Future<void> _handleSaveMask() async {
+    final success = await _navigationMask.saveChanges();
+    if (success) {
+      _showMessage('Mask saved successfully', Colors.green);
+      setState(() {});
+    } else {
+      _showMessage('Failed to save mask', Colors.red);
+    }
+  }
+
+  Future<void> _handleResetMask() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Mask?'),
+        content: const Text(
+          'This will discard all your changes and restore the original mask.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Reset', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final success = await _navigationMask.resetToOriginal();
+      if (success) {
+        setState(() {});
+        _showMessage('Mask reset to original', Colors.green);
+      } else {
+        _showMessage('Failed to reset mask', Colors.red);
+      }
+    }
+  }
+
+  void _exitAdminEditMode() {
+    setState(() {
+      _layerManager.isAdminEditMode = false;
+      _paintedCells.clear();
+    });
+  }
+
+  // ============================================================
   // UI Builder Methods
   // ============================================================
 
   Widget _buildMap() {
+    final isAdminMode = _layerManager.isAdminEditMode;
+
     return FlutterMap(
       mapController: _mapController,
       options: MapOptions(
@@ -624,6 +724,12 @@ class _IntegratedMapState extends State<IntegratedMap> {
         initialZoom: MapConstants.defaultZoom,
         onMapReady: _onMapReady,
         onTap: _handleMapTap,
+        // Disable map gestures in admin edit mode to allow painting
+        interactionOptions: InteractionOptions(
+          flags: isAdminMode
+              ? InteractiveFlag.none
+              : InteractiveFlag.all,
+        ),
       ),
       children: [
         // Base map layer
@@ -671,6 +777,12 @@ class _IntegratedMapState extends State<IntegratedMap> {
         if (_maskInitialized && _layerManager.showMaskOverlay)
           PolygonLayer(
             polygons: _buildMaskOverlay(),
+          ),
+
+        // Painted cells visualization (admin edit mode)
+        if (_layerManager.isAdminEditMode && _paintedCells.isNotEmpty)
+          PolygonLayer(
+            polygons: _buildPaintedCellsOverlay(),
           ),
 
         // Marina markers
@@ -848,22 +960,59 @@ class _IntegratedMapState extends State<IntegratedMap> {
 
 
   List<Polygon> _buildMaskOverlay() {
-    final metadata = _navigationMask.getMetadata();
-    final bbox = metadata['bbox'];
+    final polygons = <Polygon>[];
+    final resolution = _navigationMask.resolution;
+    final halfRes = resolution / 2;
 
-    return [
-      Polygon(
-        points: [
-          LatLng(bbox['min_lat'], bbox['min_lon']),
-          LatLng(bbox['max_lat'], bbox['min_lon']),
-          LatLng(bbox['max_lat'], bbox['max_lon']),
-          LatLng(bbox['min_lat'], bbox['max_lon']),
-        ],
-        color: Colors.transparent,
-        borderStrokeWidth: 2.0,
-        borderColor: Colors.purple.withValues(alpha: 0.8),
-      ),
-    ];
+    // Get boundary water cells and draw them as small squares
+    final boundaryCells = _navigationMask.getBoundaryWaterCells();
+
+    for (final center in boundaryCells) {
+      polygons.add(
+        Polygon(
+          points: [
+            LatLng(center.latitude - halfRes, center.longitude - halfRes),
+            LatLng(center.latitude + halfRes, center.longitude - halfRes),
+            LatLng(center.latitude + halfRes, center.longitude + halfRes),
+            LatLng(center.latitude - halfRes, center.longitude + halfRes),
+          ],
+          color: Colors.purple.withValues(alpha: 0.15),
+          borderStrokeWidth: 1.0,
+          borderColor: Colors.purple.withValues(alpha: 0.6),
+        ),
+      );
+    }
+
+    return polygons;
+  }
+
+  List<Polygon> _buildPaintedCellsOverlay() {
+    final polygons = <Polygon>[];
+    final resolution = _navigationMask.resolution;
+    final halfRes = resolution / 2;
+    final isWaterBrush = _layerManager.brushType == AdminBrushType.water;
+
+    for (final cell in _paintedCells) {
+      final center = _navigationMask.gridToCoords(cell.row, cell.col);
+      polygons.add(
+        Polygon(
+          points: [
+            LatLng(center.latitude - halfRes, center.longitude - halfRes),
+            LatLng(center.latitude + halfRes, center.longitude - halfRes),
+            LatLng(center.latitude + halfRes, center.longitude + halfRes),
+            LatLng(center.latitude - halfRes, center.longitude + halfRes),
+          ],
+          color: isWaterBrush
+              ? Colors.blue.withValues(alpha: 0.5)
+              : Colors.brown.withValues(alpha: 0.5),
+          borderStrokeWidth: 1.0,
+          borderColor: isWaterBrush
+              ? Colors.blue.withValues(alpha: 0.8)
+              : Colors.brown.withValues(alpha: 0.8),
+        ),
+      );
+    }
+    return polygons;
   }
 
   Marker _buildUserLocationMarker() {
@@ -975,8 +1124,37 @@ class _IntegratedMapState extends State<IntegratedMap> {
     return Scaffold(
       body: Stack(
         children: [
-          // Main map
-          _buildMap(),
+          // Main map with gesture detector for admin painting
+          GestureDetector(
+            behavior: _layerManager.isAdminEditMode
+                ? HitTestBehavior.opaque
+                : HitTestBehavior.translucent,
+            onTapDown: _layerManager.isAdminEditMode
+                ? (details) {
+                    final latLng = _screenToLatLng(details.localPosition);
+                    if (latLng != null) {
+                      _handleAdminPaint(latLng);
+                    }
+                  }
+                : null,
+            onPanStart: _layerManager.isAdminEditMode
+                ? (details) {
+                    final latLng = _screenToLatLng(details.localPosition);
+                    if (latLng != null) {
+                      _handleAdminPaint(latLng);
+                    }
+                  }
+                : null,
+            onPanUpdate: _layerManager.isAdminEditMode
+                ? (details) {
+                    final latLng = _screenToLatLng(details.localPosition);
+                    if (latLng != null) {
+                      _handleAdminPaint(latLng);
+                    }
+                  }
+                : null,
+            child: _buildMap(),
+          ),
 
           // Navigation status indicator (top right)
           Positioned(
@@ -998,6 +1176,7 @@ class _IntegratedMapState extends State<IntegratedMap> {
                     geoJsonBuilder: _geoJsonBuilder,
                     maskInitialized: _maskInitialized,
                     onClose: () => _layerManager.showLayerControls = false,
+                    onEnterAdminEdit: _enterAdminEditMode,
                   ),
                 );
               }
@@ -1005,11 +1184,44 @@ class _IntegratedMapState extends State<IntegratedMap> {
             },
           ),
 
-          // Layer control toggle button (top left, when panel hidden)
+          // Admin edit toolbar (when in edit mode)
           ListenableBuilder(
             listenable: _layerManager,
             builder: (context, _) {
-              if (!_layerManager.showLayerControls) {
+              if (_layerManager.isAdminEditMode && _maskInitialized) {
+                return Positioned(
+                  top: 50,
+                  left: 10,
+                  child: AdminEditToolbar(
+                    layerManager: _layerManager,
+                    navigationMask: _navigationMask,
+                    onSave: _handleSaveMask,
+                    onReset: _handleResetMask,
+                    onClose: _exitAdminEditMode,
+                    onZoomIn: () {
+                      _mapController.move(
+                        _mapController.camera.center,
+                        _mapController.camera.zoom + 1,
+                      );
+                    },
+                    onZoomOut: () {
+                      _mapController.move(
+                        _mapController.camera.center,
+                        _mapController.camera.zoom - 1,
+                      );
+                    },
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+
+          // Layer control toggle button (top left, when panel hidden and not in admin mode)
+          ListenableBuilder(
+            listenable: _layerManager,
+            builder: (context, _) {
+              if (!_layerManager.showLayerControls && !_layerManager.isAdminEditMode) {
                 return Positioned(
                   top: 30,
                   left: 10,

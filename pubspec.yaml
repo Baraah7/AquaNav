@@ -20,6 +20,7 @@ dependencies:
   location: ^8.0.1
   latlong2: ^0.9.1
   collection: ^1.18.0
+  path_provider: ^2.1.2
 
 dev_dependencies:
   flutter_test:

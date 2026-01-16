@@ -8,6 +8,7 @@ class LayerControlPanel extends StatelessWidget {
   final GeoJsonLayerBuilder? geoJsonBuilder;
   final bool maskInitialized;
   final VoidCallback onClose;
+  final VoidCallback? onEnterAdminEdit;
 
   const LayerControlPanel({
     super.key,
@@ -15,6 +16,7 @@ class LayerControlPanel extends StatelessWidget {
     this.geoJsonBuilder,
     required this.maskInitialized,
     required this.onClose,
+    this.onEnterAdminEdit,
   });
 
   @override
@@ -313,6 +315,47 @@ class LayerControlPanel extends StatelessWidget {
           onChanged: maskInitialized
               ? (val) => layerManager.showMaskOverlay = val
               : null,
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+        ),
+        const Divider(),
+        _buildAdminSection(),
+      ],
+    );
+  }
+
+  Widget _buildAdminSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(Icons.admin_panel_settings, size: 16, color: Colors.orange),
+            SizedBox(width: 4),
+            Text(
+              'Admin Tools',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ListTile(
+          leading: const Icon(Icons.edit, size: 18, color: Colors.orange),
+          title: const Text('Edit Mask', style: TextStyle(fontSize: 13)),
+          subtitle: Text(
+            maskInitialized
+                ? 'Paint water/land cells'
+                : 'Loading...',
+            style: const TextStyle(fontSize: 10),
+          ),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+          onTap: maskInitialized && onEnterAdminEdit != null
+              ? () {
+                  onEnterAdminEdit!();
+                  onClose();
+                }
+              : null,
+          enabled: maskInitialized,
           dense: true,
           contentPadding: const EdgeInsets.symmetric(horizontal: 8),
         ),
