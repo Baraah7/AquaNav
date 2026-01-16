@@ -366,5 +366,5 @@ class AStarNode {
   double get fScore => gScore + hScore;
 
   @override
-  String toString() => 'AStarNode(${cell}, f=${fScore.toStringAsFixed(2)})';
+  String toString() => 'AStarNode($cell, f=${fScore.toStringAsFixed(2)})';
 }

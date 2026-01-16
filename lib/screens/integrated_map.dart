@@ -64,7 +64,7 @@ class _IntegratedMapState extends State<IntegratedMap> {
 
   // Marina data
   Marina? _selectedMarina;
-  bool _showMarinas = true;
+  final bool _showMarinas = true;
 
   // Navigation state
   NavigationRoute? _currentRoute;

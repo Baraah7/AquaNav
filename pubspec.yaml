@@ -41,6 +41,7 @@ flutter:
     - assets/data/gulf_test_features.geojson
     - assets/data/marinas.geojson
     - assets/navigation/
+    - lib/widgets/map/mask/bahrain_territorial_waters.tif
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

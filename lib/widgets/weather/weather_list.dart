@@ -36,7 +36,7 @@ class WeatherList extends StatelessWidget {
           ),
           weather_card(
             'Wind Direction',
-            '${weatherData.currentWeather.wind_dir}',
+            weatherData.currentWeather.wind_dir,
           ),
           weather_card(
             'Wind Degree',
@@ -53,11 +53,11 @@ class WeatherList extends StatelessWidget {
           weather_card('Humidity', '${weatherData.currentWeather.humidity}%'),
           weather_card(
             'Condition',
-            '${weatherData.currentWeather.condition.text}',
+            weatherData.currentWeather.condition.text,
           ),
           weather_card(
             'Last Updated',
-            '${weatherData.currentWeather.last_updated}',
+            weatherData.currentWeather.last_updated,
           ),
           weather_card(
             'Cloud Coverage',
