@@ -305,6 +305,7 @@ class _IntegratedMapState extends State<IntegratedMap> {
   }
 
   void _handleAdminPaint(LatLng point) {
+    // Water = 1, Land/Eraser = 0
     final value = _layerManager.brushType == AdminBrushType.water ? 1 : 0;
     final painted = _navigationMask.paintBrush(
       point.longitude,
@@ -990,7 +991,25 @@ class _IntegratedMapState extends State<IntegratedMap> {
     final polygons = <Polygon>[];
     final resolution = _navigationMask.resolution;
     final halfRes = resolution / 2;
-    final isWaterBrush = _layerManager.brushType == AdminBrushType.water;
+    final brushType = _layerManager.brushType;
+
+    // Determine color based on brush type
+    Color fillColor;
+    Color borderColor;
+    switch (brushType) {
+      case AdminBrushType.water:
+        fillColor = Colors.blue.withValues(alpha: 0.5);
+        borderColor = Colors.blue.withValues(alpha: 0.8);
+        break;
+      case AdminBrushType.land:
+        fillColor = Colors.brown.withValues(alpha: 0.5);
+        borderColor = Colors.brown.withValues(alpha: 0.8);
+        break;
+      case AdminBrushType.eraser:
+        fillColor = Colors.grey.withValues(alpha: 0.5);
+        borderColor = Colors.grey.withValues(alpha: 0.8);
+        break;
+    }
 
     for (final cell in _paintedCells) {
       final center = _navigationMask.gridToCoords(cell.row, cell.col);
@@ -1002,13 +1021,9 @@ class _IntegratedMapState extends State<IntegratedMap> {
             LatLng(center.latitude + halfRes, center.longitude + halfRes),
             LatLng(center.latitude - halfRes, center.longitude + halfRes),
           ],
-          color: isWaterBrush
-              ? Colors.blue.withValues(alpha: 0.5)
-              : Colors.brown.withValues(alpha: 0.5),
+          color: fillColor,
           borderStrokeWidth: 1.0,
-          borderColor: isWaterBrush
-              ? Colors.blue.withValues(alpha: 0.8)
-              : Colors.brown.withValues(alpha: 0.8),
+          borderColor: borderColor,
         ),
       );
     }

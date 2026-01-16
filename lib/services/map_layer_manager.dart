@@ -225,4 +225,7 @@ enum AdminBrushType {
 
   /// Paint land cells (blocked, value = 0)
   land,
+
+  /// Eraser - removes cells (sets to land/0)
+  eraser,
 }

@@ -100,7 +100,7 @@ class AdminEditToolbar extends StatelessWidget {
                 onTap: () => layerManager.brushType = AdminBrushType.water,
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
             Expanded(
               child: _BrushTypeButton(
                 label: 'Land',
@@ -108,6 +108,16 @@ class AdminEditToolbar extends StatelessWidget {
                 color: Colors.brown,
                 isSelected: layerManager.brushType == AdminBrushType.land,
                 onTap: () => layerManager.brushType = AdminBrushType.land,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: _BrushTypeButton(
+                label: 'Erase',
+                icon: Icons.auto_fix_off,
+                color: Colors.grey,
+                isSelected: layerManager.brushType == AdminBrushType.eraser,
+                onTap: () => layerManager.brushType = AdminBrushType.eraser,
               ),
             ),
           ],
@@ -253,6 +263,10 @@ class AdminEditToolbar extends StatelessWidget {
             'Brown = Land (blocked)',
             style: TextStyle(fontSize: 9, color: Colors.grey),
           ),
+          Text(
+            'Grey = Eraser (remove cells)',
+            style: TextStyle(fontSize: 9, color: Colors.grey),
+          ),
         ],
       ),
     );
@@ -279,7 +293,7 @@ class _BrushTypeButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? color.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
@@ -288,15 +302,15 @@ class _BrushTypeButton extends StatelessWidget {
             width: isSelected ? 2 : 1,
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: isSelected ? color : Colors.grey),
-            const SizedBox(width: 4),
+            Icon(icon, size: 18, color: isSelected ? color : Colors.grey),
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: isSelected ? color : Colors.grey,
               ),
