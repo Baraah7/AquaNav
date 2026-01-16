@@ -693,7 +693,9 @@ class _IntegratedMapState extends State<IntegratedMap> {
     if (confirm == true) {
       final success = await _navigationMask.resetToOriginal();
       if (success) {
-        setState(() {});
+        setState(() {
+          _paintedCells.clear();
+        });
         _showMessage('Mask reset to original', Colors.green);
       } else {
         _showMessage('Failed to reset mask', Colors.red);
