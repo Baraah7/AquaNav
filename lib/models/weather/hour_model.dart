@@ -34,10 +34,11 @@ class hour_model{
   final double gust_mph;
   final double gust_kph;
   final double uv;
-  final double short_rad;
-  final double diff_rad;
-  final double dni;
-  final double gti;
+  // Solar radiation fields - optional (may not be in all API responses)
+  final double? short_rad;
+  final double? diff_rad;
+  final double? dni;
+  final double? gti;
 
   hour_model({
     required this.time_epoch,
@@ -75,10 +76,10 @@ class hour_model{
     required this.gust_mph,
     required this.gust_kph,
     required this.uv,
-    required this.short_rad,
-    required this.diff_rad,
-    required this.dni,
-    required this.gti,
+    this.short_rad,
+    this.diff_rad,
+    this.dni,
+    this.gti,
   });
 
   factory hour_model.fromJson(Map<String, dynamic> json) {
@@ -123,10 +124,11 @@ class hour_model{
         gust_mph: (json['gust_mph'] as num).toDouble(),
         gust_kph: (json['gust_kph'] as num).toDouble(),
         uv: (json['uv'] as num).toDouble(),
-        short_rad: (json['short_rad'] as num).toDouble(),
-        diff_rad: (json['diff_rad'] as num).toDouble(),
-        dni: (json['dni'] as num).toDouble(),
-        gti: (json['gti'] as num).toDouble(),
+        // Solar radiation fields - optional, may be null in some API responses
+        short_rad: json['short_rad'] != null ? (json['short_rad'] as num).toDouble() : null,
+        diff_rad: json['diff_rad'] != null ? (json['diff_rad'] as num).toDouble() : null,
+        dni: json['dni'] != null ? (json['dni'] as num).toDouble() : null,
+        gti: json['gti'] != null ? (json['gti'] as num).toDouble() : null,
       );
     } catch (e, stackTrace) {
       print('ERROR in hour_model.fromJson: $e');

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:Bahaar/screens/weather.dart';
 import 'package:Bahaar/screens/integrated_map.dart';
+import 'package:Bahaar/widgets/main_page_cards.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,98 +37,86 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: Text(widget.title),
-        backgroundColor: const Color.fromARGB(255, 100, 181, 246),
+        title: const Text(
+          'Bahaar',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+        backgroundColor: const Color.fromARGB(255, 22, 62, 98),
         foregroundColor: Colors.white,
         centerTitle: true,
+        elevation: 0,
       ),
-      body: Center(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Weather Screen Button
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                textStyle: const TextStyle(fontSize: 18),
-                backgroundColor: const Color.fromARGB(255, 204, 231, 205),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Weather()),
-                );
-              },
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.cloud, color: Color.fromARGB(255, 10, 97, 43)),
-                  SizedBox(width: 12),
-                  Text(
-                    'Weather',
-                    style: TextStyle(color: Color.fromARGB(255, 10, 97, 43)),
-                  ),
-                ],
+            const Text(
+              'Welcome to Bahaar',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 52, 59, 138),
               ),
             ),
+            const SizedBox(height: 30),
 
-            const SizedBox(height: 20),
-
-            // Integrated Map Button (Main Feature)
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                backgroundColor: const Color.fromARGB(255, 100, 181, 246),
-                elevation: 4,
-              ),
-              onPressed: () {
+            MainPageCard(
+              icon: Icons.map,
+              title: 'Fishing Map',
+              subtitle: 'Interactive map with depth colors',
+              onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const IntegratedMap()),
                 );
               },
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.map, color: Colors.white, size: 28),
-                  SizedBox(width: 12),
-                  Text(
-                    'Map with Depth Colors',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 16),
 
-            // Dev Tools Section
-            const Divider(indent: 40, endIndent: 40),
-            const SizedBox(height: 10),
-            const Text(
-              'Developer Tools',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
+            MainPageCard(
+              icon: Icons.cloud,
+              title: 'Weather',
+              subtitle: 'Check marine weather',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Weather()),
+                );
+              },
             ),
-            const SizedBox(height: 10),
+
+            const SizedBox(height: 16),
+
+            MainPageCard(
+              icon: Icons.camera_alt,
+              title: 'Fish Recognition',
+              subtitle: 'Identify fish species',
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Fish Recognition - Coming Soon')),
+                );
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            MainPageCard(
+              icon: Icons.sailing,
+              title: 'Mariner Harvest',
+              subtitle: 'Track your catches',
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Mariner Harvest - Coming Soon')),
+                );
+              },
+            ),
           ],
         ),
       ),
     );
   }
-
 }
-
-
-
-
-
-
-
-

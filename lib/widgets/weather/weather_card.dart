@@ -1,28 +1,41 @@
 import 'package:flutter/material.dart';
 
-Widget weather_card(String title, String value){
+Widget weather_card(String title, String value) {
   return Card(
-    elevation: 4,
-    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+    elevation: 6,
+    shadowColor: Colors.black26,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Container(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF00695C),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              value,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF004D40),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-          ),
-        ),
-      ],
+      ),
     ),
   );
 }

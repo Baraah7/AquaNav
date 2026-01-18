@@ -9,24 +9,55 @@ class WeatherList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 5,
-        mainAxisSpacing: 5,
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFE0F7FA),
+            Color.fromARGB(255, 117, 183, 193),
+          ],
+        ),
       ),
-        children: [
-          Image.network(
-            'https:${weatherData.currentWeather.condition.icon}',
-            width: 50,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Image.network(
+                'https:${weatherData.currentWeather.condition.icon}',
+                width: 100,
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Location',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
+                  Text(
+                    '${weatherData.location.name}, ${weatherData.location.country}',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ],
+              )
+            ],
           ),
-          weather_card(
-            'Location',
-            '${weatherData.location.name}, ${weatherData.location.country}',
+        ),
+        const SizedBox(height: 10),
+        GridView(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 5,
+            mainAxisSpacing: 5,
+            childAspectRatio: 1.8,
           ),
-          weather_card(
+          children: [
+            weather_card(
             'Temperature',
             '${weatherData.currentWeather.temp_c} °C',
           ),
@@ -81,38 +112,81 @@ class WeatherList extends StatelessWidget {
             'Wind Chill',
             '${weatherData.currentWeather.windchill_c} °C',
           ),
-          const Text(" "),
-          const Text("Forecast"),
-          const Text(" "),
-          ...weatherData.forecast != null
-              ? [
-                  weather_card(
-                    'Avg Temperature',
-                    '${weatherData.forecast!.forecastDay.day.avgtemp_c} °C',
-                  ),
-                  weather_card(
-                    'Max Temperature',
-                    '${weatherData.forecast!.forecastDay.day.maxtemp_c} °C',
-                  ),
-                  weather_card(
-                    'Min Temperature',
-                    '${weatherData.forecast!.forecastDay.day.mintemp_c} °C',
-                  ),
-                  weather_card(
-                    'Max Wind Speed',
-                    '${weatherData.forecast!.forecastDay.day.maxwind_kph} km/h',
-                  ),
-                  weather_card(
-                    'Total Precipitation',
-                    '${weatherData.forecast!.forecastDay.day.totalprecip_mm} mm',
-                  ),
-                  weather_card(
-                    'Average Humidity',
-                    '${weatherData.forecast!.forecastDay.day.avghumidity}%',
-                  ),
-                ]
-              : [weather_card('Forecast', 'Not Available')],
-        ],
-      );
+          ],
+        ),
+        const SizedBox(height: 20),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFE0F7FA),
+                Color.fromARGB(255, 117, 183, 193),
+              ],
+            ),
+          ),
+          child: const Text(
+            'Forecast',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF004D40),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        if (weatherData.forecast != null)
+          GridView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 5,
+              mainAxisSpacing: 5,
+              childAspectRatio: 1.8,
+            ),
+            children: [
+              weather_card(
+                'Avg Temperature',
+                '${weatherData.forecast!.forecastDay.day.avgtemp_c} °C',
+              ),
+              weather_card(
+                'Max Temperature',
+                '${weatherData.forecast!.forecastDay.day.maxtemp_c} °C',
+              ),
+              weather_card(
+                'Min Temperature',
+                '${weatherData.forecast!.forecastDay.day.mintemp_c} °C',
+              ),
+              weather_card(
+                'Max Wind Speed',
+                '${weatherData.forecast!.forecastDay.day.maxwind_kph} km/h',
+              ),
+              weather_card(
+                'Total Precipitation',
+                '${weatherData.forecast!.forecastDay.day.totalprecip_mm} mm',
+              ),
+              weather_card(
+                'Average Humidity',
+                '${weatherData.forecast!.forecastDay.day.avghumidity}%',
+              ),
+            ],
+          )
+        else
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'Forecast Not Available',
+              style: TextStyle(
+                fontSize: 16,
+                color: Color(0xFF00695C),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
