@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../screens/map.dart';
 import '../screens/integrated_map.dart';
 import 'widgets/map/geojson_overlay_test_page.dart';
+import '../screens/fish_recognition_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

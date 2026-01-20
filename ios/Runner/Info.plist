@@ -54,5 +54,12 @@
 	<string>I need it</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Beacuase</string>
+	<!-- Camera permissions -->
+	<key>NSCameraUsageDescription</key>
+	<string>Bahaar needs camera access to identify fish species</string>
+    
+    <!-- Photo library permission -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Bahaar needs photo library access to select fish images</string>
 </dict>
 </plist>
