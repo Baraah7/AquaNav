@@ -159,6 +159,82 @@
           ]
         ]
       }
+    },
+    {
+      "type": "Feature",
+      "id": "restricted_area_1",
+      "properties": {
+        "name": "Military Zone - East Coast",
+        "type": "restricted_area",
+        "reason": "Military operations",
+        "authority": "Bahrain Defense Force",
+        "status": "no_entry",
+        "warning": "Entry strictly prohibited - military zone",
+        "description": "Active military training and operations area"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [50.7000, 26.0000],
+            [50.8000, 26.0000],
+            [50.8000, 26.1000],
+            [50.7000, 26.1000],
+            [50.7000, 26.0000]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "restricted_area_2",
+      "properties": {
+        "name": "Oil Platform Safety Zone",
+        "type": "restricted_area",
+        "reason": "Oil and gas operations",
+        "authority": "National Oil Authority",
+        "status": "no_entry",
+        "radius_m": 500,
+        "warning": "500m exclusion zone around platform",
+        "description": "Safety zone for offshore oil operations"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [50.5500, 25.8000],
+            [50.6000, 25.8000],
+            [50.6000, 25.8500],
+            [50.5500, 25.8500],
+            [50.5500, 25.8000]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "restricted_area_3",
+      "properties": {
+        "name": "Port Authority Zone - Mina Salman",
+        "type": "restricted_area",
+        "reason": "Port operations",
+        "authority": "Bahrain Port Authority",
+        "status": "restricted",
+        "warning": "Commercial shipping area - stay clear",
+        "description": "Active port operations - vessel traffic only"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [50.6200, 26.1800],
+            [50.6700, 26.1800],
+            [50.6700, 26.2200],
+            [50.6200, 26.2200],
+            [50.6200, 26.1800]
+          ]
+        ]
+      }
     }
   ]
 }

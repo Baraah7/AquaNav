@@ -63,23 +63,15 @@ class WeatherApiService {
       'aqi': airQuality ? 'yes' : 'no',
     };
 
-    if (days != null) {
-      queryParams['days'] = days.toString();
-    }
-
-    if (alert != null) {
-      queryParams['alerts'] = alert ? 'yes' : 'no';
-    }
-    //days and alerts are optional parameters
+    queryParams['days'] = days.toString();
+  
+    queryParams['alerts'] = alert ? 'yes' : 'no';
+      //days and alerts are optional parameters
     // but both must be both either null or both not
     if (alert == null && days == null) {
        type = "current";
-    } else if  (alert != null && days != null) {
-      type = "forecast";
-    }
-    else {
-      throw Exception("invalid parameters");
-    }
+    } else    type = "forecast";
+  
     try {
       print('=== Building API Request ===');
       print('Type: $type');

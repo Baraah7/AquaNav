@@ -19,6 +19,8 @@ dependencies:
   flutter_map: ^8.2.2
   location: ^8.0.1
   latlong2: ^0.9.1
+  collection: ^1.18.0
+  path_provider: ^2.1.2
 
 dev_dependencies:
   flutter_test:
@@ -38,7 +40,9 @@ flutter:
   assets:
     - secrets.env
     - assets/data/gulf_test_features.geojson
+    - assets/data/marinas.geojson
     - assets/navigation/
+    - lib/widgets/map/mask/bahrain_territorial_waters.tif
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

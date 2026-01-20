@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../utilites/weather_api_service.dart';
+import '../utilities/weather_api_service.dart';
 import '../models/weather/weather_response_model.dart';
-import '../widgets/weather_list.dart';
+import '../widgets/weather/weather_list.dart';
 //Load configuration at runtime from a .env file which can be
 // used throughout the application.
 
@@ -55,40 +55,42 @@ class _WeatherPageState extends State<Weather> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Weather',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-
-            if (isLoading)
-              const CircularProgressIndicator()
-            else if (errorMessage != null)
-              Column(
-                children: [
-                  const Icon(Icons.error, color: Colors.red, size: 48),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Error: $errorMessage',
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _loadWeatherData,
-                    child: const Text('Retry'),
-                  ),
-                ],
-              )
-            else if (weatherData != null)
-              WeatherList(weatherData: weatherData!)
-            else
-              const Text('No data available'),
-          ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Weather'),
+        backgroundColor: const Color.fromARGB(255, 7, 55, 94),
+        foregroundColor: Colors.white,
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isLoading)
+                const CircularProgressIndicator()
+              else if (errorMessage != null)
+                Column(
+                  children: [
+                    const Icon(Icons.error, color: Colors.red, size: 48),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Error: $errorMessage',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _loadWeatherData,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                )
+              else if (weatherData != null)
+                WeatherList(weatherData: weatherData!)
+              else
+                const Text('No data available'),
+            ],
+          ),
         ),
       ),
     );
