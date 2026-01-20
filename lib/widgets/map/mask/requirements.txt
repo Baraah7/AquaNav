@@ -1,4 +1,4 @@
-# Coastline & Land/Water Mask System - Requirements
+# Territorial Water Mask System - Requirements
 # For Bahaar Maritime Navigation Application
 
 # Core geospatial libraries
@@ -12,11 +12,13 @@ numpy>=1.24.0
 # HTTP requests for OSM API
 requests>=2.31.0
 
+# Geodesic calculations (REQUIRED for territorial water buffering)
+pyproj>=3.6.0
+
 # Visualization
 matplotlib>=3.7.0
 
 # Optional dependencies for enhanced functionality
-# pyproj>=3.6.0  # Advanced coordinate transformations
 # scipy>=1.11.0  # Advanced routing algorithms
 # pillow>=10.0.0  # Image processing for mask visualization
 

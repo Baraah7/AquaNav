@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import '../screens/weather.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../screens/map.dart';
-import '../screens/integrated_map.dart';
-import 'widgets/map/geojson_overlay_test_page.dart';
-import '../screens/fish_recognition_screen.dart';
+import 'package:Bahaar/screens/weather.dart';
+import 'package:Bahaar/screens/integrated_map.dart';
+import 'package:Bahaar/widgets/main_page_cards.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,85 +37,86 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          //button to go to weather screen
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: const TextStyle(fontSize: 18, color: Color.fromARGB(255, 10, 97, 43)),
-              backgroundColor: const Color.fromARGB(255, 204, 231, 205),
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: const Text(
+          'Bahaar',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+        backgroundColor: const Color.fromARGB(255, 22, 62, 98),
+        foregroundColor: Colors.white,
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text(
+              'Welcome to Bahaar',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 52, 59, 138),
+              ),
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Weather()),
-              );
-            },
-            child: const Text('Go to Weather Screen'),
-          ),
-          const SizedBox(height: 20),
-          //button to go to weather screen
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: const TextStyle(fontSize: 18, color: Color.fromARGB(255, 10, 97, 43)),
-              backgroundColor: const Color.fromARGB(255, 204, 231, 205),
+            const SizedBox(height: 30),
+
+            MainPageCard(
+              icon: Icons.map,
+              title: 'Fishing Map',
+              subtitle: 'Interactive map with depth colors',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const IntegratedMap()),
+                );
+              },
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Map()),
-              );
-            },
-            child: const Text('Go to Map Screen'),
-            
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: const TextStyle(fontSize: 18),
-              backgroundColor: const Color.fromARGB(255, 173, 216, 230),
+
+            const SizedBox(height: 16),
+
+            MainPageCard(
+              icon: Icons.cloud,
+              title: 'Weather',
+              subtitle: 'Check marine weather',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Weather()),
+                );
+              },
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const IntegratedMap()),
-              );
-            },
-            child: const Text('Integrated Map (All Layers)'),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: const TextStyle(fontSize: 14),
-              backgroundColor: const Color.fromARGB(255, 230, 230, 230),
+
+            const SizedBox(height: 16),
+
+            MainPageCard(
+              icon: Icons.camera_alt,
+              title: 'Fish Recognition',
+              subtitle: 'Identify fish species',
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Fish Recognition - Coming Soon')),
+                );
+              },
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const GeoJsonOverlayTestPage(),
-                ),
-              );
-            },
-            child: const Text('GeoJSON Test (Dev)'),
-          )
-        ],
+
+            const SizedBox(height: 16),
+
+            MainPageCard(
+              icon: Icons.sailing,
+              title: 'Mariner Harvest',
+              subtitle: 'Track your catches',
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Mariner Harvest - Coming Soon')),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
-
 }
-
-
-
-
-
-
-
-

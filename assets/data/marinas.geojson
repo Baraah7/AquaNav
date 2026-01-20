@@ -1,0 +1,149 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "marina_001",
+      "properties": {
+        "name": "Bahrain Marina Club",
+        "type": "marina",
+        "access": "public",
+        "depth_m": 3.5,
+        "facilities": ["parking", "fuel", "restroom", "restaurant"],
+        "osm_id": null,
+        "validated": true,
+        "description": "Full-service marina with boat launching, parking, and amenities"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [50.6100, 26.2200]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "marina_002",
+      "properties": {
+        "name": "Sitra Boat Launch",
+        "type": "slipway",
+        "access": "public",
+        "depth_m": 2.5,
+        "facilities": ["parking"],
+        "osm_id": null,
+        "validated": true,
+        "description": "Public boat launch with parking area"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [50.6200, 26.1500]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "marina_003",
+      "properties": {
+        "name": "Durrat Marina",
+        "type": "marina",
+        "access": "customers",
+        "depth_m": 4.0,
+        "facilities": ["parking", "fuel", "restroom", "restaurant", "shower"],
+        "osm_id": null,
+        "validated": true,
+        "description": "Luxury marina with full facilities for residents and guests"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [50.7100, 25.7800]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "marina_004",
+      "properties": {
+        "name": "Muharraq Boat Ramp",
+        "type": "boat_ramp",
+        "access": "public",
+        "depth_m": 2.0,
+        "facilities": ["parking"],
+        "osm_id": null,
+        "validated": true,
+        "description": "Simple boat ramp for small vessels"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [50.6300, 26.2600]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "marina_005",
+      "properties": {
+        "name": "Budaiya Slipway",
+        "type": "slipway",
+        "access": "public",
+        "depth_m": 2.2,
+        "facilities": ["parking"],
+        "osm_id": null,
+        "validated": true,
+        "description": "North coast boat launch with good access"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [50.4700, 26.1700]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "marina_006",
+      "properties": {
+        "name": "Amwaj Marina",
+        "type": "marina",
+        "access": "customers",
+        "depth_m": 3.8,
+        "facilities": ["parking", "fuel", "restroom", "restaurant"],
+        "osm_id": null,
+        "validated": true,
+        "description": "Modern marina serving Amwaj Islands residents and visitors"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [50.6600, 26.2900]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "marina_007",
+      "properties": {
+        "name": "Manama Yacht Club",
+        "type": "marina",
+        "access": "private",
+        "depth_m": 4.5,
+        "facilities": ["parking", "fuel", "restroom", "restaurant", "shower"],
+        "osm_id": null,
+        "validated": true,
+        "description": "Private yacht club with premium facilities for members"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [50.5900, 26.2300]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "marina_008",
+      "properties": {
+        "name": "Hawar Island Dock",
+        "type": "harbor",
+        "access": "public",
+        "depth_m": 3.0,
+        "facilities": ["parking", "restroom"],
+        "osm_id": null,
+        "validated": true,
+        "description": "Small harbor for accessing Hawar Islands"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [50.7500, 25.6700]
+      }
+    }
+  ]
+}
