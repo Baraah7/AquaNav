@@ -171,7 +171,8 @@ class FishListing {
   final FishCondition condition;
   final List<PaymentMethod> acceptedPayments;
   final String? description;
-  final String? imageUrl;
+  final List<String> imageUrls;
+  final String? benefitPayImageUrl;
   final SellerInfo seller;
   final DateTime listedAt;
   final ListingStatus status;
@@ -187,13 +188,16 @@ class FishListing {
     required this.condition,
     required this.acceptedPayments,
     this.description,
-    this.imageUrl,
+    this.imageUrls = const [],
+    this.benefitPayImageUrl,
     required this.seller,
     required this.listedAt,
     this.status = ListingStatus.available,
     this.catchLocation,
     this.catchDate,
   });
+
+  String? get primaryImageUrl => imageUrls.isNotEmpty ? imageUrls.first : null;
 
   double get totalPrice => weight * pricePerKg;
 
@@ -223,7 +227,11 @@ class FishListing {
               ))
           .toList(),
       description: json['description'] as String?,
-      imageUrl: json['imageUrl'] as String?,
+      imageUrls: (json['imageUrls'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      benefitPayImageUrl: json['benefitPayImageUrl'] as String?,
       seller: SellerInfo.fromJson(json['seller'] as Map<String, dynamic>),
       listedAt: DateTime.parse(json['listedAt'] as String),
       status: ListingStatus.values.firstWhere(
@@ -247,7 +255,8 @@ class FishListing {
       'condition': condition.name,
       'acceptedPayments': acceptedPayments.map((e) => e.name).toList(),
       'description': description,
-      'imageUrl': imageUrl,
+      'imageUrls': imageUrls,
+      'benefitPayImageUrl': benefitPayImageUrl,
       'seller': seller.toJson(),
       'listedAt': listedAt.toIso8601String(),
       'status': status.name,
@@ -265,7 +274,8 @@ class FishListing {
     FishCondition? condition,
     List<PaymentMethod>? acceptedPayments,
     String? description,
-    String? imageUrl,
+    List<String>? imageUrls,
+    String? benefitPayImageUrl,
     SellerInfo? seller,
     DateTime? listedAt,
     ListingStatus? status,
@@ -281,7 +291,8 @@ class FishListing {
       condition: condition ?? this.condition,
       acceptedPayments: acceptedPayments ?? this.acceptedPayments,
       description: description ?? this.description,
-      imageUrl: imageUrl ?? this.imageUrl,
+      imageUrls: imageUrls ?? this.imageUrls,
+      benefitPayImageUrl: benefitPayImageUrl ?? this.benefitPayImageUrl,
       seller: seller ?? this.seller,
       listedAt: listedAt ?? this.listedAt,
       status: status ?? this.status,

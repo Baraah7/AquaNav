@@ -1,16 +1,32 @@
 import 'package:flutter/foundation.dart';
 import '../models/marketplace/fish_listing_model.dart';
+import '../models/marketplace/order_model.dart';
 
 class FishMarketplaceService extends ChangeNotifier {
   final List<FishListing> _listings = [];
+  final List<Order> _orders = [];
+  String? _currentSellerId;
   bool _isLoading = false;
   String? _error;
 
   List<FishListing> get listings => List.unmodifiable(_listings);
   List<FishListing> get availableListings =>
       _listings.where((l) => l.status == ListingStatus.available).toList();
+  List<Order> get orders => List.unmodifiable(_orders);
+  List<Order> get sellerOrders => _orders
+      .where((o) => o.listing.seller.id == _currentSellerId)
+      .toList();
+  List<Order> get pendingSellerOrders => sellerOrders
+      .where((o) => o.status == OrderStatus.pending)
+      .toList();
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String? get currentSellerId => _currentSellerId;
+
+  void setCurrentSeller(String sellerId) {
+    _currentSellerId = sellerId;
+    notifyListeners();
+  }
 
   FishMarketplaceService() {
     _loadSampleData();
@@ -209,5 +225,83 @@ class FishMarketplaceService extends ChangeNotifier {
     } catch (e) {
       return null;
     }
+  }
+
+  // Order Management
+  Future<Order> createOrder({
+    required FishListing listing,
+    required BuyerInfo buyer,
+    required PaymentMethod paymentMethod,
+    String? paymentProofImageUrl,
+  }) async {
+    final order = Order(
+      id: 'order_${DateTime.now().millisecondsSinceEpoch}',
+      listing: listing,
+      buyer: buyer,
+      paymentMethod: paymentMethod,
+      paymentProofImageUrl: paymentProofImageUrl,
+      orderedAt: DateTime.now(),
+    );
+
+    _orders.insert(0, order);
+    await updateListingStatus(listing.id, ListingStatus.reserved);
+    notifyListeners();
+    return order;
+  }
+
+  Future<void> acceptOrder(String orderId, {String? note}) async {
+    final index = _orders.indexWhere((o) => o.id == orderId);
+    if (index != -1) {
+      _orders[index] = _orders[index].copyWith(
+        status: OrderStatus.accepted,
+        sellerNote: note,
+        respondedAt: DateTime.now(),
+      );
+      notifyListeners();
+    }
+  }
+
+  Future<void> rejectOrder(String orderId, {String? reason}) async {
+    final index = _orders.indexWhere((o) => o.id == orderId);
+    if (index != -1) {
+      final order = _orders[index];
+      _orders[index] = order.copyWith(
+        status: OrderStatus.rejected,
+        rejectionReason: reason,
+        respondedAt: DateTime.now(),
+      );
+      // Make the listing available again
+      await updateListingStatus(order.listing.id, ListingStatus.available);
+      notifyListeners();
+    }
+  }
+
+  Future<void> completeOrder(String orderId) async {
+    final index = _orders.indexWhere((o) => o.id == orderId);
+    if (index != -1) {
+      final order = _orders[index];
+      _orders[index] = order.copyWith(
+        status: OrderStatus.completed,
+        respondedAt: DateTime.now(),
+      );
+      await updateListingStatus(order.listing.id, ListingStatus.sold);
+      notifyListeners();
+    }
+  }
+
+  Order? getOrderById(String id) {
+    try {
+      return _orders.firstWhere((o) => o.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  List<Order> getOrdersForListing(String listingId) {
+    return _orders.where((o) => o.listing.id == listingId).toList();
+  }
+
+  List<FishListing> getSellerListings(String sellerId) {
+    return _listings.where((l) => l.seller.id == sellerId).toList();
   }
 }
