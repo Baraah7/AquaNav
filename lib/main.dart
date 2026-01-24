@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:Bahaar/screens/weather.dart';
 import 'package:Bahaar/screens/integrated_map.dart';
+import 'package:Bahaar/screens/mariner_harvest.dart';
 import 'package:Bahaar/widgets/main_page_cards.dart';
 
 Future<void> main() async {
@@ -107,10 +108,11 @@ class _MyHomePageState extends State<MyHomePage> {
             MainPageCard(
               icon: Icons.sailing,
               title: 'Mariner Harvest',
-              subtitle: 'Track your catches',
+              subtitle: 'Buy & sell fresh fish',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Mariner Harvest - Coming Soon')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MarinerHarvestPage()),
                 );
               },
             ),
