@@ -3,6 +3,18 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.chaquo.python")
+}
+
+chaquopy {
+    defaultConfig {
+        buildPython("C:/Program Files/Python312/python.exe")
+        version = "3.12"
+        pip {
+            install("numpy")
+            install("pillow")
+        }
+    }
 }
 
 android {
@@ -16,10 +28,13 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = "17"
     }
 
     defaultConfig {
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.aquanav"
         // You can update the following values to match your application needs.
