@@ -22,7 +22,6 @@ dependencies:
   image_picker: ^1.2.1
   image: ^4.7.2
   tflite_flutter: ^0.12.1
-  image_picker: ^1.2.1
 
 dev_dependencies:
   flutter_test:

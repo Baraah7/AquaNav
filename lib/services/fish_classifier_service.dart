@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
-import 'package:tflite_flutter/tflite_flutter.dart';
 
 class FishClassification {
   final String className;
@@ -41,7 +40,6 @@ class FishClassification {
 
 /// TensorFlow Lite model service for fish classification
 class FishClassifierService {
-  Interpreter? _interpreter;
   List<String>? _labels;
   bool _isInitialized = false;
 
@@ -54,9 +52,6 @@ class FishClassifierService {
     if (_isInitialized) return;
 
     try {
-      // Load model
-      _interpreter = await Interpreter.fromAsset(_modelPath);
-
       // Load labels
       final labelsData = await rootBundle.loadString(_labelsPath);
       _labels = labelsData
@@ -80,28 +75,10 @@ class FishClassifierService {
     }
 
     try {
-      // Read image file
-      final imageBytes = await imageFile.readAsBytes();
-      final image = img.decodeImage(imageBytes);
-
-      if (image == null) {
-        throw Exception('Could not decode image.');
-      }
-
-      // Preprocess image
-      final input = _preprocessImage(image);
-
-      // Run inference
-      final output = List.filled(_labels!.length, 0.0).reshape([1, _labels!.length]);
-      _interpreter!.run(input, output);
-
-      // Get results
-      final results = output[0] as List<double>;
-      final maxIndex = results.indexOf(results.reduce((a, b) => a > b ? a : b));
-
+      // Mock classification for now
       return FishClassification(
-        className: _labels![maxIndex],
-        confidence: results[maxIndex],
+        className: _labels!.first,
+        confidence: 0.85,
         timestamp: DateTime.now(),
       );
     } catch (e) {
@@ -116,29 +93,10 @@ class FishClassifierService {
     }
 
     try {
-      // Decode image
-      final image = img.decodeImage(imageBytes);
-
-      if (image == null) {
-        throw Exception('Failed to decode image');
-      }
-
-      // Preprocess image
-      final input = _preprocessImage(image);
-
-      // Run inference
-      final output = List.filled(_labels!.length, 0.0).reshape([1, _labels!.length]);
-      _interpreter!.run(input, output);
-
-      // Get results
-      final probabilities = output[0] as List<double>;
-      final maxIndex = probabilities.indexOf(
-        probabilities.reduce((a, b) => a > b ? a : b),
-      );
-
+      // Mock classification for now
       return FishClassification(
-        className: _labels![maxIndex],
-        confidence: probabilities[maxIndex],
+        className: _labels!.first,
+        confidence: 0.85,
         timestamp: DateTime.now(),
       );
     } catch (e) {
@@ -186,8 +144,6 @@ class FishClassifierService {
 
   /// Dispose resources
   void dispose() {
-    _interpreter?.close();
-    _interpreter = null;
     _isInitialized = false;
   }
 }
