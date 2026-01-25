@@ -19,14 +19,9 @@ dependencies:
   flutter_map: ^8.2.2
   location: ^8.0.1
   latlong2: ^0.9.1
-<<<<<<< HEAD
   image_picker: ^1.2.1
   image: ^4.7.2
   tflite_flutter: ^0.12.1
-=======
-  collection: ^1.18.0
-  path_provider: ^2.1.2
->>>>>>> origin
 
 dev_dependencies:
   flutter_test:
@@ -48,7 +43,11 @@ flutter:
     - assets/data/gulf_test_features.geojson
     - assets/data/marinas.geojson
     - assets/navigation/
+    - assets/models/
     - lib/widgets/map/mask/bahrain_territorial_waters.tif
+    - assets/models/fish_classifier.tflite
+    - assets/models/labels.txt
+
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

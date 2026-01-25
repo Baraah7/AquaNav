@@ -89,27 +89,30 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
   @override
   Widget build(BuildContext context) {
     final classificationState = ref.watch(fishClassificationProvider);
-    final isInitialized =
-        ref.read(fishClassificationProvider.notifier).isInitialized;
+    final isInitialized = classificationState.isInitialized;
+    final hasError = classificationState.error != null && !isInitialized;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('تعرف على الأسماك'),
         centerTitle: true,
         backgroundColor: const Color(0xFF0077BE),
+        foregroundColor: Colors.white,
       ),
-      body: !isInitialized
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('جاري تحميل نموذج التعرف...'),
-                ],
-              ),
-            )
-          : SingleChildScrollView(
+      body: hasError
+          ? _buildErrorView(classificationState.error!)
+          : !isInitialized
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('جاري تحميل نموذج التعرف...'),
+                    ],
+                  ),
+                )
+              : SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -415,6 +418,43 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
           const SizedBox(width: 8),
           Text(name),
         ],
+      ),
+    );
+  }
+
+  Widget _buildErrorView(String error) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            const Text(
+              'فشل تحميل نموذج التعرف',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                ref.read(fishClassificationProvider.notifier).initialize();
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('إعادة المحاولة'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0077BE),
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -4,22 +4,31 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
 
-class FishClassification{
+class FishClassification {
   final String className;
   final double confidence;
   final DateTime timestamp;
   final double threshold = 0.7;
 
+  // Mapping of English class names to Arabic names
+  static const Map<String, String> _arabicNames = {
+    'Gilt-Head Bream': 'دنيس',
+    'Hourse Mackerel': 'سكمبري',
+    'Sea Bass': 'قاروص',
+    'Shrimp': 'روبيان',
+  };
+
   FishClassification({
-    required this.className, 
-    required this.confidence, 
-    required this.timestamp
+    required this.className,
+    required this.confidence,
+    required this.timestamp,
   });
 
-  //check confidence
-  bool isConfident(double threshold) {
-    return confidence >= threshold;
-  }
+  // Get Arabic name for the fish class
+  String get arabicName => _arabicNames[className] ?? className;
+
+  // Check if classification is confident (using default threshold)
+  bool get isConfident => confidence >= threshold;
 
   Map<String, dynamic> toJson() {
     return {
@@ -30,61 +39,63 @@ class FishClassification{
   }
 }
 
-///TensorFlow Lite model service
+/// TensorFlow Lite model service for fish classification
 class FishClassifierService {
-  Interpreter? _interpreter; //check what is this
+  Interpreter? _interpreter;
   List<String>? _labels;
   bool _isInitialized = false;
 
-  static const String _modelPath = 'assets/models/fish_classification.tflite';
+  static const String _modelPath = 'assets/models/fish_classifier.tflite';
   static const String _labelsPath = 'assets/models/labels.txt';
-  static const int _inputSize = 224; 
+  static const int _inputSize = 224;
 
-  //Initialize the classifier
+  /// Initialize the classifier
   Future<void> initialize() async {
-    if(_isInitialized) return;
+    if (_isInitialized) return;
 
-    try{
-      //Load model
+    try {
+      // Load model
       _interpreter = await Interpreter.fromAsset(_modelPath);
 
-      //Load labels
+      // Load labels
       final labelsData = await rootBundle.loadString(_labelsPath);
-      _labels = labelsData.split('\n')
-                          .where((label) => label.trim().isNotEmpty)
-                          .toList();
+      _labels = labelsData
+          .split('\n')
+          .where((label) => label.trim().isNotEmpty)
+          .toList();
+
       _isInitialized = true;
-    } catch(e){
+    } catch (e) {
       throw Exception('Error initializing FishClassifierService: $e');
     }
   }
 
-  //Check if classifier is initialized
+  /// Check if classifier is initialized
   bool get isInitialized => _isInitialized;
 
-  //Classify image
+  /// Classify image from file
   Future<FishClassification?> classifyImage(File imageFile) async {
-    if(!_isInitialized){
+    if (!_isInitialized) {
       throw Exception('FishClassifierService is not initialized.');
     }
 
-    try{
-      //Read image file
+    try {
+      // Read image file
       final imageBytes = await imageFile.readAsBytes();
       final image = img.decodeImage(imageBytes);
 
-      if (image == null){
+      if (image == null) {
         throw Exception('Could not decode image.');
       }
 
-      //Preprocess image
+      // Preprocess image
       final input = _preprocessImage(image);
 
-      //run inference
+      // Run inference
       final output = List.filled(_labels!.length, 0.0).reshape([1, _labels!.length]);
       _interpreter!.run(input, output);
 
-      //Get results
+      // Get results
       final results = output[0] as List<double>;
       final maxIndex = results.indexOf(results.reduce((a, b) => a > b ? a : b));
 
@@ -93,17 +104,8 @@ class FishClassifierService {
         confidence: results[maxIndex],
         timestamp: DateTime.now(),
       );
-    } catch(e){
+    } catch (e) {
       throw Exception('Error classifying image: $e');
-    } finally{
-      // Delete temporary image file as per policy
-      try {
-        if (await imageFile.exists()) {
-          await imageFile.delete();
-        }
-      } catch (e) {
-        print('Warning: Could not delete temporary image: $e');
-      }
     }
   }
 
@@ -116,7 +118,7 @@ class FishClassifierService {
     try {
       // Decode image
       final image = img.decodeImage(imageBytes);
-      
+
       if (image == null) {
         throw Exception('Failed to decode image');
       }
@@ -140,7 +142,6 @@ class FishClassifierService {
         timestamp: DateTime.now(),
       );
     } catch (e) {
-      print('✗ Error during classification: $e');
       throw Exception('Classification failed: $e');
     }
   }
