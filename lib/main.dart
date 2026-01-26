@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:Bahaar/screens/weather.dart';
 import 'package:Bahaar/screens/integrated_map.dart';
 import 'package:Bahaar/widgets/main_page_cards.dart';
 import 'package:Bahaar/screens/fish_recognition_screen.dart';
+import 'package:Bahaar/screens/signup.dart';
+import 'package:Bahaar/screens/login.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   await dotenv.load(fileName: "secrets.env");
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -64,6 +69,33 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             const SizedBox(height: 30),
+
+            const SizedBox(height: 16),
+
+            MainPageCard(
+              icon: Icons.person,
+              title: 'Login',
+              subtitle: 'Login',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+
+            MainPageCard(
+              icon: Icons.person,
+              title: 'Register',
+              subtitle: 'Register',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                );
+              },
+            ),
 
             MainPageCard(
               icon: Icons.map,
