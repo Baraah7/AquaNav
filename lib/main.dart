@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:Bahaar/screens/weather.dart';
 import 'package:Bahaar/screens/integrated_map.dart';
 import 'package:Bahaar/widgets/main_page_cards.dart';
@@ -54,6 +55,13 @@ class _MyHomePageState extends State<MyHomePage> {
         foregroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => FirebaseAuth.instance.signOut(),
+            tooltip: 'Sign Out',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

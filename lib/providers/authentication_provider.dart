@@ -19,9 +19,10 @@ class AuthProvider with ChangeNotifier {
   }) async {
     try {
       isLoading = true;
+      error = null;
       notifyListeners();
 
-      final user = await _AuthenticationService.register(email, password);
+      final user = await _AuthenticationService.register(email, password, displayName: name);
 
       if (user != null) {
         final appUser = AppUser.User(
@@ -31,9 +32,13 @@ class AuthProvider with ChangeNotifier {
           password: password,
         );
         await _firestoreService.createUser(appUser);
+        print('User document created successfully for ${user.uid}');
+      } else {
+        error = 'Registration failed - no user returned';
       }
     } catch (e) {
       error = e.toString();
+      print('Registration error: $e');
     } finally {
       isLoading = false;
       notifyListeners();
