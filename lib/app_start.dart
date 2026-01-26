@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'models/user.dart';
+import 'package:path_provider_android/messages.g.dart';
 import 'screens/login.dart';
-import 'screens/home_page.dart'; // rename MyHomePage file if needed
+import 'main.dart'; // rename MyHomePage file if needed
 
 class AppStart extends StatelessWidget {
   const AppStart({super.key});

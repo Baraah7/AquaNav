@@ -8,7 +8,7 @@ import 'package:Bahaar/widgets/main_page_cards.dart';
 import 'package:Bahaar/screens/fish_recognition_screen.dart';
 import 'package:Bahaar/screens/signup.dart';
 import 'package:Bahaar/screens/login.dart';
-
+import 'app_start.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Bahaar',
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
-      home: const MyHomePage(title: 'Bahaar Home Page'),
+      home: const AppStart(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -68,9 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Color.fromARGB(255, 52, 59, 138),
               ),
             ),
+            
             const SizedBox(height: 30),
-
-            const SizedBox(height: 16),
 
             MainPageCard(
               icon: Icons.person,
