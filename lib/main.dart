@@ -7,8 +7,6 @@ import 'package:Bahaar/screens/weather.dart';
 import 'package:Bahaar/screens/integrated_map.dart';
 import 'package:Bahaar/widgets/main_page_cards.dart';
 import 'package:Bahaar/screens/fish_recognition_screen.dart';
-import 'package:Bahaar/screens/signup.dart';
-import 'package:Bahaar/screens/login.dart';
 import 'app_start.dart';
 
 Future<void> main() async {
@@ -78,31 +76,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             
             const SizedBox(height: 30),
-
-            MainPageCard(
-              icon: Icons.person,
-              title: 'Login',
-              subtitle: 'Login',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-
-            MainPageCard(
-              icon: Icons.person,
-              title: 'Register',
-              subtitle: 'Register',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SignUpScreen()),
-                );
-              },
-            ),
 
             MainPageCard(
               icon: Icons.map,

@@ -44,6 +44,53 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> login({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      isLoading = true;
+      error = null;
+      notifyListeners();
+
+      final user = await _AuthenticationService.login(email, password);
+
+      if (user == null) {
+        error = 'Invalid email or password';
+        return false;
+      }
+      return true;
+    } catch (e) {
+      error = e.toString();
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> signInAsGuest() async {
+    try {
+      isLoading = true;
+      error = null;
+      notifyListeners();
+
+      final user = await _AuthenticationService.signInAsGuest();
+
+      if (user == null) {
+        error = 'Failed to sign in as guest';
+        return false;
+      }
+      return true;
+    } catch (e) {
+      error = e.toString();
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 }
 
 final authProviderProvider = ChangeNotifierProvider<AuthProvider>((ref) {

@@ -44,6 +44,17 @@ class AuthenticationService {
     return _firebaseAuth.currentUser;
   }
 
+  // Sign in as guest (anonymous)
+  Future<User?> signInAsGuest() async {
+    try {
+      UserCredential userCredential = await _firebaseAuth.signInAnonymously();
+      return userCredential.user;
+    } catch (e) {
+      print('Error signing in as guest: $e');
+      return null;
+    }
+  }
+
   Future<void> upgradeGuest({
   required String email,
   required String password,
