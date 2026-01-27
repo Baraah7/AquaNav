@@ -2,6 +2,11 @@
 cmake_minimum_required(VERSION 3.14)
 project(aquanav LANGUAGES CXX)
 
+# Force use of v143 toolset for VS 2022
+set(CMAKE_GENERATOR_TOOLSET "v143")
+set(CMAKE_VS_PLATFORM_TOOLSET "v143")
+set(CMAKE_MSVC_TOOLSET_VERSION "")
+
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
 set(BINARY_NAME "aquanav")

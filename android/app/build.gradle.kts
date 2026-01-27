@@ -8,8 +8,8 @@ plugins {
 
 chaquopy {
     defaultConfig {
-        buildPython("C:/Program Files/Python312/python.exe")
-        version = "3.12"
+        buildPython("C:/Program Files/WindowsApps/PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0/python3.11.exe")
+        version = "3.11"
         pip {
             install("numpy")
             install("pillow")

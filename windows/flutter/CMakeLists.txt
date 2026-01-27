@@ -1,6 +1,12 @@
 # This file controls Flutter-level build steps. It should not be edited.
 cmake_minimum_required(VERSION 3.14)
 
+project(flutter_windows)
+
+# Force use of v143 toolset for VS 2022
+set(CMAKE_GENERATOR_TOOLSET "v143")
+set(CMAKE_VS_PLATFORM_TOOLSET "v143")
+
 set(EPHEMERAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ephemeral")
 
 # Configuration provided via flutter tool.

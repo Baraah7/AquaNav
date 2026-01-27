@@ -45,14 +45,20 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<string>your usage description here</string>
-		<key>UIBackgroundModes</key>
+	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
-	</array>	
-	<key>NSLocationInUseDescription</key>
-	<string>I need it</string>
+	</array>
+	<!-- Location permissions -->
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Beacuase</string>
+	<string>Bahaar uses your location to calculate star positions and provide marine navigation.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Bahaar uses your location in the background to provide continuous navigation.</string>
+	<!-- Camera permission for star capture -->
+	<key>NSCameraUsageDescription</key>
+	<string>Bahaar uses the camera to capture star field images for celestial navigation.</string>
+	<!-- Motion sensors for device orientation -->
+	<key>NSMotionUsageDescription</key>
+	<string>Bahaar uses motion sensors to determine device orientation for star alignment.</string>
 </dict>
 </plist>

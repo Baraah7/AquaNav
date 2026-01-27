@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide NavigationMode;
 import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
@@ -12,6 +12,9 @@ import 'package:Bahaar/services/osrm_routing_service.dart';
 import 'package:Bahaar/services/marine_pathfinding_service.dart';
 import 'package:Bahaar/services/hybrid_route_coordinator.dart';
 import 'package:Bahaar/services/navigation_session_manager.dart';
+import 'package:Bahaar/services/celestial_navigation_service.dart';
+import 'package:Bahaar/services/device_orientation_service.dart';
+import 'package:Bahaar/services/navigation_mode_manager.dart';
 import 'package:Bahaar/models/navigation/marina_model.dart';
 import 'package:Bahaar/models/navigation/route_model.dart';
 import 'package:Bahaar/widgets/map/enhanced_depth_layer.dart';
@@ -22,6 +25,7 @@ import 'package:Bahaar/widgets/navigation/route_polyline_layer.dart';
 import 'package:Bahaar/widgets/navigation/active_navigation_overlay.dart';
 import 'package:Bahaar/utilities/map_constants.dart';
 import 'package:Bahaar/widgets/map/admin_edit_toolbar.dart';
+import 'package:Bahaar/screens/star_alignment_screen.dart';
 
 /// Integrated map with clean architecture and enhanced depth visualization
 ///
@@ -51,6 +55,12 @@ class _IntegratedMapState extends State<IntegratedMap> {
   late final MarinePathfindingService _marineService;
   late final HybridRouteCoordinator _routeCoordinator;
   NavigationSessionManager? _navigationManager;
+
+  // Celestial navigation services
+  late final DeviceOrientationService _orientationService;
+  late final CelestialNavigationService _celestialService;
+  late final NavigationModeManager _navigationModeManager;
+  bool _celestialServicesInitialized = false;
 
   // State
   bool _mapReady = false;
@@ -115,6 +125,7 @@ class _IntegratedMapState extends State<IntegratedMap> {
     _loadGeoJson();
     _initMarinas();
     _initRoutingServices();
+    _initCelestialServices();
   }
 
   Future<void> _initRoutingServices() async {
@@ -155,11 +166,54 @@ class _IntegratedMapState extends State<IntegratedMap> {
     }
   }
 
+  Future<void> _initCelestialServices() async {
+    try {
+      // Initialize device orientation service
+      _orientationService = DeviceOrientationService();
+
+      // Initialize celestial navigation service
+      _celestialService = CelestialNavigationService(
+        orientationService: _orientationService,
+      );
+      await _celestialService.initialize();
+
+      // Initialize navigation mode manager
+      _navigationModeManager = NavigationModeManager(
+        location: _location,
+        orientationService: _orientationService,
+        celestialService: _celestialService,
+      );
+
+      // Update position when location is available
+      if (_locationData != null) {
+        _celestialService.updatePosition(LatLng(
+          _locationData!.latitude ?? MapConstants.defaultLatitude,
+          _locationData!.longitude ?? MapConstants.defaultLongitude,
+        ));
+      }
+
+      // Start the navigation mode manager
+      await _navigationModeManager.start();
+
+      if (mounted) {
+        setState(() => _celestialServicesInitialized = true);
+        log('Celestial navigation services initialized successfully');
+      }
+    } catch (e) {
+      log('Error initializing celestial services: $e');
+    }
+  }
+
   @override
   void dispose() {
     _navigationManager?.removeListener(_onNavigationUpdate);
     _navigationManager?.dispose();
     _layerManager.dispose();
+    if (_celestialServicesInitialized) {
+      _navigationModeManager.dispose();
+      _celestialService.dispose();
+      _orientationService.dispose();
+    }
     super.dispose();
   }
 
@@ -649,6 +703,29 @@ class _IntegratedMapState extends State<IntegratedMap> {
         16,
       );
     }
+  }
+
+  void _openStarAlignmentScreen() {
+    if (!_celestialServicesInitialized) return;
+
+    // Update position before opening
+    if (_locationData != null) {
+      _celestialService.updatePosition(LatLng(
+        _locationData!.latitude ?? MapConstants.defaultLatitude,
+        _locationData!.longitude ?? MapConstants.defaultLongitude,
+      ));
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StarAlignmentScreen(
+          celestialService: _celestialService,
+          orientationService: _orientationService,
+          modeManager: _navigationModeManager,
+        ),
+      ),
+    );
   }
 
   // ============================================================
@@ -1340,6 +1417,23 @@ class _IntegratedMapState extends State<IntegratedMap> {
               backgroundColor: _currentRoute != null || _showPortSelection ? Colors.orange : Colors.blue,
               child: Icon(
                 _currentRoute != null || _showPortSelection ? Icons.close : Icons.directions_boat,
+                color: Colors.white,
+              ),
+            ),
+          ),
+
+          // Star alignment FAB button (top left, below navigation button)
+          Positioned(
+            top: 180,
+            left: 10,
+            child: FloatingActionButton.small(
+              heroTag: 'star_alignment',
+              onPressed: _celestialServicesInitialized
+                  ? () => _openStarAlignmentScreen()
+                  : null,
+              backgroundColor: _celestialServicesInitialized ? Colors.amber : Colors.grey,
+              child: const Icon(
+                Icons.star,
                 color: Colors.white,
               ),
             ),

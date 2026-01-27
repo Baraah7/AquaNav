@@ -22,6 +22,11 @@ dependencies:
   collection: ^1.18.0
   path_provider: ^2.1.2
 
+  # Celestial Navigation dependencies
+  sensors_plus: ^5.0.0        # Device orientation (accelerometer, gyroscope, magnetometer)
+  camera: ^0.10.5+9           # Camera for star capture (optional advanced feature)
+  permission_handler: ^11.0.1 # Runtime permissions
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -42,6 +47,7 @@ flutter:
     - assets/data/gulf_test_features.geojson
     - assets/data/marinas.geojson
     - assets/navigation/
+    - assets/celestial/stars.json
     - lib/widgets/map/mask/bahrain_territorial_waters.tif
   #   - images/a_dot_ham.jpeg
 

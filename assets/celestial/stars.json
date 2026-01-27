@@ -1,0 +1,168 @@
+{
+  "version": "1.0",
+  "description": "Navigation stars for celestial navigation (magnitude <= 2.0)",
+  "stars": [
+    {
+      "name": "Sirius",
+      "arabic": "الشعرى اليمانية",
+      "ra": 101.2875,
+      "dec": -16.7161,
+      "magnitude": -1.46,
+      "constellation": "Canis Major"
+    },
+    {
+      "name": "Canopus",
+      "arabic": "سهيل",
+      "ra": 95.9879,
+      "dec": -52.6957,
+      "magnitude": -0.74,
+      "constellation": "Carina"
+    },
+    {
+      "name": "Arcturus",
+      "arabic": "السماك الرامح",
+      "ra": 213.9153,
+      "dec": 19.1824,
+      "magnitude": -0.05,
+      "constellation": "Boötes"
+    },
+    {
+      "name": "Vega",
+      "arabic": "النسر الواقع",
+      "ra": 279.2347,
+      "dec": 38.7837,
+      "magnitude": 0.03,
+      "constellation": "Lyra"
+    },
+    {
+      "name": "Capella",
+      "arabic": "العيوق",
+      "ra": 79.1724,
+      "dec": 45.9980,
+      "magnitude": 0.08,
+      "constellation": "Auriga"
+    },
+    {
+      "name": "Rigel",
+      "arabic": "رجل الجوزاء",
+      "ra": 78.6344,
+      "dec": -8.2016,
+      "magnitude": 0.13,
+      "constellation": "Orion"
+    },
+    {
+      "name": "Procyon",
+      "arabic": "الشعرى الشامية",
+      "ra": 114.8253,
+      "dec": 5.2250,
+      "magnitude": 0.34,
+      "constellation": "Canis Minor"
+    },
+    {
+      "name": "Betelgeuse",
+      "arabic": "إبط الجوزاء",
+      "ra": 88.7929,
+      "dec": 7.4070,
+      "magnitude": 0.50,
+      "constellation": "Orion"
+    },
+    {
+      "name": "Altair",
+      "arabic": "النسر الطائر",
+      "ra": 297.6958,
+      "dec": 8.8683,
+      "magnitude": 0.77,
+      "constellation": "Aquila"
+    },
+    {
+      "name": "Aldebaran",
+      "arabic": "الدبران",
+      "ra": 68.9802,
+      "dec": 16.5093,
+      "magnitude": 0.85,
+      "constellation": "Taurus"
+    },
+    {
+      "name": "Spica",
+      "arabic": "السماك الأعزل",
+      "ra": 201.2983,
+      "dec": -11.1614,
+      "magnitude": 1.04,
+      "constellation": "Virgo"
+    },
+    {
+      "name": "Antares",
+      "arabic": "قلب العقرب",
+      "ra": 247.3519,
+      "dec": -26.4320,
+      "magnitude": 1.06,
+      "constellation": "Scorpius"
+    },
+    {
+      "name": "Pollux",
+      "arabic": "الذراع المقبوضة",
+      "ra": 116.3289,
+      "dec": 28.0262,
+      "magnitude": 1.14,
+      "constellation": "Gemini"
+    },
+    {
+      "name": "Fomalhaut",
+      "arabic": "فم الحوت",
+      "ra": 344.4127,
+      "dec": -29.6222,
+      "magnitude": 1.16,
+      "constellation": "Piscis Austrinus"
+    },
+    {
+      "name": "Deneb",
+      "arabic": "ذنب الدجاجة",
+      "ra": 310.3580,
+      "dec": 45.2803,
+      "magnitude": 1.25,
+      "constellation": "Cygnus"
+    },
+    {
+      "name": "Regulus",
+      "arabic": "قلب الأسد",
+      "ra": 152.0929,
+      "dec": 11.9672,
+      "magnitude": 1.35,
+      "constellation": "Leo"
+    },
+    {
+      "name": "Castor",
+      "arabic": "رأس التوأم المقدم",
+      "ra": 113.6494,
+      "dec": 31.8883,
+      "magnitude": 1.58,
+      "constellation": "Gemini"
+    },
+    {
+      "name": "Polaris",
+      "arabic": "النجم القطبي",
+      "ra": 37.9545,
+      "dec": 89.2641,
+      "magnitude": 1.98,
+      "constellation": "Ursa Minor",
+      "note": "North Star - critical for true north determination"
+    },
+    {
+      "name": "Bellatrix",
+      "arabic": "المنكب",
+      "ra": 81.2828,
+      "dec": 6.3497,
+      "magnitude": 1.64,
+      "constellation": "Orion"
+    },
+    {
+      "name": "Alnilam",
+      "arabic": "النظام",
+      "ra": 84.0533,
+      "dec": -1.2019,
+      "magnitude": 1.69,
+      "constellation": "Orion",
+      "note": "Central star of Orion's Belt"
+    }
+  ]
+}
