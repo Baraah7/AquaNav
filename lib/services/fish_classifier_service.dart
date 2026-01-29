@@ -53,6 +53,7 @@ class FishClassifierService {
 
     try {
 <<<<<<< HEAD
+<<<<<<< HEAD
       // Load model
       _interpreter = await Interpreter.fromAsset(_modelPath);
 
@@ -68,6 +69,8 @@ class FishClassifierService {
         debugPrint('  Output type: ${outputTensor.type}');
       }
 
+=======
+>>>>>>> e-commerce
 =======
 >>>>>>> e-commerce
       // Load labels
@@ -98,6 +101,7 @@ class FishClassifierService {
     }
 
     try {
+<<<<<<< HEAD
 <<<<<<< HEAD
       // Read image file
       final imageBytes = await imageFile.readAsBytes();
@@ -131,6 +135,9 @@ class FishClassifierService {
 =======
       // Mock classification for now
 >>>>>>> e-commerce
+=======
+      // Mock classification for now
+>>>>>>> e-commerce
       return FishClassification(
         className: _labels!.first,
         confidence: 0.85,
@@ -148,6 +155,7 @@ class FishClassifierService {
     }
 
     try {
+<<<<<<< HEAD
 <<<<<<< HEAD
       // Decode image
       final image = img.decodeImage(imageBytes);
@@ -179,6 +187,9 @@ class FishClassifierService {
         debugPrint('SELECTED: ${_labels![maxIndex]} at index $maxIndex with ${(probabilities[maxIndex] * 100).toStringAsFixed(1)}% confidence');
       }
 
+=======
+      // Mock classification for now
+>>>>>>> e-commerce
 =======
       // Mock classification for now
 >>>>>>> e-commerce
