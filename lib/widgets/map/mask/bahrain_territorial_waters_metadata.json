@@ -1,0 +1,21 @@
+{
+  "bbox": {
+    "min_lon": 50.3,
+    "min_lat": 25.8,
+    "max_lon": 50.9,
+    "max_lat": 26.4
+  },
+  "grid": {
+    "width": 600,
+    "height": 599,
+    "resolution_degrees": 0.001,
+    "resolution_meters_approx": 111.0
+  },
+  "projection": "EPSG:4326",
+  "encoding": {
+    "water": 1,
+    "land": 0
+  },
+  "territorial_waters": "12 nautical miles (22,224 meters)",
+  "boundaries": "Clipped against Qatar and Saudi Arabia maritime boundaries"
+}

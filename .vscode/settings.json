@@ -1,5 +1,7 @@
 {
     "liveshare.languages.allowGuestCommandControl": true,
     "liveshare.allowGuestTaskControl": true,
-    "liveshare.allowGuestDebugControl": true
+    "liveshare.allowGuestDebugControl": true,
+    "cmake.sourceDirectory": "C:/Users/s62ht/Desktop/Bahaar/windows/flutter",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

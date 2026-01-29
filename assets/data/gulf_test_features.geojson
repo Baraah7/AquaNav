@@ -1,0 +1,240 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "fishing_spot_1",
+      "properties": {
+        "name": "Popular Fishing Spot - Hawar Islands",
+        "type": "fishing_spot",
+        "fish_species": ["Hamour", "Safi", "Kan'ad"],
+        "depth_m": 15,
+        "rating": 4.5,
+        "description": "Excellent spot for grouper and kingfish"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [50.7833, 25.6667]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fishing_spot_2",
+      "properties": {
+        "name": "Shallow Water Spot - Near Budaiya",
+        "type": "fishing_spot",
+        "fish_species": ["Safi", "Sha'ari"],
+        "depth_m": 8,
+        "rating": 3.8,
+        "description": "Good for rabbitfish and emperors"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [50.4500, 26.1500]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fishing_spot_3",
+      "properties": {
+        "name": "Deep Water Spot - East of Muharraq",
+        "type": "fishing_spot",
+        "fish_species": ["Kan'ad", "Nagroor", "Hamour"],
+        "depth_m": 25,
+        "rating": 4.8,
+        "description": "Prime location for kingfish and trevally"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [50.6500, 26.2500]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "shipping_lane_1",
+      "properties": {
+        "name": "Main Shipping Channel",
+        "type": "shipping_lane",
+        "width_m": 200,
+        "traffic": "heavy",
+        "warning": "Avoid fishing - high vessel traffic"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [50.5000, 26.0000],
+          [50.5500, 26.0500],
+          [50.6000, 26.1000],
+          [50.6500, 26.1500]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "patrol_route_1",
+      "properties": {
+        "name": "Coast Guard Patrol Route",
+        "type": "patrol_route",
+        "frequency": "4 times daily",
+        "description": "Regular coast guard monitoring"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [50.4000, 26.2000],
+          [50.5000, 26.2200],
+          [50.6000, 26.2000],
+          [50.7000, 26.1800]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "protected_area_1",
+      "properties": {
+        "name": "Marine Protected Area - Hawar",
+        "type": "protected_zone",
+        "status": "no_fishing",
+        "authority": "Bahrain Marine Authority",
+        "established": "2015",
+        "description": "Protected marine sanctuary - fishing prohibited"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [50.7500, 25.6000],
+            [50.8500, 25.6000],
+            [50.8500, 25.7000],
+            [50.7500, 25.7000],
+            [50.7500, 25.6000]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fishing_zone_1",
+      "properties": {
+        "name": "Recommended Fishing Zone - North Coast",
+        "type": "fishing_zone",
+        "status": "allowed",
+        "season": "year_round",
+        "restrictions": "No commercial trawling",
+        "description": "General recreational fishing permitted"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [50.3500, 26.1000],
+            [50.5000, 26.1000],
+            [50.5000, 26.2500],
+            [50.3500, 26.2500],
+            [50.3500, 26.1000]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "reef_area_1",
+      "properties": {
+        "name": "Coral Reef Area - Fasht Al Adhm",
+        "type": "reef",
+        "status": "sensitive",
+        "depth_m": 5,
+        "warning": "Navigate carefully - shallow reef",
+        "description": "Rich marine biodiversity - fish aggregation point"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [50.6000, 25.9000],
+            [50.6500, 25.9000],
+            [50.6500, 25.9500],
+            [50.6000, 25.9500],
+            [50.6000, 25.9000]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "restricted_area_1",
+      "properties": {
+        "name": "Military Zone - East Coast",
+        "type": "restricted_area",
+        "reason": "Military operations",
+        "authority": "Bahrain Defense Force",
+        "status": "no_entry",
+        "warning": "Entry strictly prohibited - military zone",
+        "description": "Active military training and operations area"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [50.7000, 26.0000],
+            [50.8000, 26.0000],
+            [50.8000, 26.1000],
+            [50.7000, 26.1000],
+            [50.7000, 26.0000]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "restricted_area_2",
+      "properties": {
+        "name": "Oil Platform Safety Zone",
+        "type": "restricted_area",
+        "reason": "Oil and gas operations",
+        "authority": "National Oil Authority",
+        "status": "no_entry",
+        "radius_m": 500,
+        "warning": "500m exclusion zone around platform",
+        "description": "Safety zone for offshore oil operations"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [50.5500, 25.8000],
+            [50.6000, 25.8000],
+            [50.6000, 25.8500],
+            [50.5500, 25.8500],
+            [50.5500, 25.8000]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "restricted_area_3",
+      "properties": {
+        "name": "Port Authority Zone - Mina Salman",
+        "type": "restricted_area",
+        "reason": "Port operations",
+        "authority": "Bahrain Port Authority",
+        "status": "restricted",
+        "warning": "Commercial shipping area - stay clear",
+        "description": "Active port operations - vessel traffic only"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [50.6200, 26.1800],
+            [50.6700, 26.1800],
+            [50.6700, 26.2200],
+            [50.6200, 26.2200],
+            [50.6200, 26.1800]
+          ]
+        ]
+      }
+    }
+  ]
+}
