@@ -50,14 +50,14 @@ class FishClassificationNotifier extends Notifier<FishClassificationState> {
     } catch (e) {
       state = state.copyWith(
         isInitialized: false,
-        error: 'فشل تحميل النموذج: $e',
+        error: 'Failed to load model: $e',
       );
     }
   }
 
   Future<void> classifyImage(File imageFile) async {
     if (!state.isInitialized) {
-      state = state.copyWith(error: 'النموذج غير جاهز');
+      state = state.copyWith(error: 'Model not ready');
       return;
     }
 
@@ -72,7 +72,7 @@ class FishClassificationNotifier extends Notifier<FishClassificationState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: 'فشل التصنيف: $e',
+        error: 'Classification failed: $e',
       );
     }
   }
