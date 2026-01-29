@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/marketplace/fish_listing_model.dart';
 import '../models/marketplace/order_model.dart';
 import '../services/fish_marketplace_service.dart';
+import '../l10n/app_localizations.dart';
 
 class MarinerHarvestPage extends StatefulWidget {
   const MarinerHarvestPage({super.key});
@@ -53,12 +54,14 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: const Text(
-          'Mariner Harvest',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.marinerHarvest,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color.fromARGB(255, 22, 62, 98),
         foregroundColor: Colors.white,
@@ -67,31 +70,31 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(icon: Icon(Icons.storefront), text: 'Marketplace'),
-            Tab(icon: Icon(Icons.add_business), text: 'Sell Fish'),
-            Tab(icon: Icon(Icons.receipt_long), text: 'My Orders'),
+          tabs: [
+            Tab(icon: const Icon(Icons.storefront), text: l10n.marketplace),
+            Tab(icon: const Icon(Icons.add_business), text: l10n.sellFish),
+            Tab(icon: const Icon(Icons.receipt_long), text: l10n.myOrders),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildMarketplaceTab(),
-          _buildSellFishTab(),
-          _buildSellerOrdersTab(),
+          _buildMarketplaceTab(l10n),
+          _buildSellFishTab(l10n),
+          _buildSellerOrdersTab(l10n),
         ],
       ),
     );
   }
 
-  Widget _buildMarketplaceTab() {
+  Widget _buildMarketplaceTab(AppLocalizations l10n) {
     return Column(
       children: [
-        _buildSearchAndFilter(),
+        _buildSearchAndFilter(l10n),
         Expanded(
           child: _filteredListings.isEmpty
-              ? _buildEmptyState()
+              ? _buildEmptyState(l10n)
               : RefreshIndicator(
                   onRefresh: _marketplaceService.refreshListings,
                   child: GridView.builder(
@@ -113,7 +116,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
     );
   }
 
-  Widget _buildSearchAndFilter() {
+  Widget _buildSearchAndFilter(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -131,7 +134,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
           TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Search fish, seller, location...',
+              hintText: l10n.searchFishSellerLocation,
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -157,20 +160,20 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
             child: Row(
               children: [
                 _buildFilterChip(
-                  label: 'Type',
+                  label: l10n.type,
                   value: _selectedTypeFilter?.displayName,
-                  onTap: () => _showTypeFilterDialog(),
+                  onTap: () => _showTypeFilterDialog(l10n),
                 ),
                 const SizedBox(width: 8),
                 _buildFilterChip(
-                  label: 'Condition',
+                  label: l10n.condition,
                   value: _selectedConditionFilter?.displayName,
-                  onTap: () => _showConditionFilterDialog(),
+                  onTap: () => _showConditionFilterDialog(l10n),
                 ),
                 if (_selectedTypeFilter != null || _selectedConditionFilter != null) ...[
                   const SizedBox(width: 8),
                   ActionChip(
-                    label: const Text('Clear Filters'),
+                    label: Text(l10n.clearFilters),
                     onPressed: () {
                       setState(() {
                         _selectedTypeFilter = null;
@@ -208,14 +211,14 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
     );
   }
 
-  void _showTypeFilterDialog() {
+  void _showTypeFilterDialog(AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Filter by Fish Type'),
+        title: Text(l10n.filterByFishType),
         children: [
           ListTile(
-            title: const Text('All Types'),
+            title: Text(l10n.allTypes),
             onTap: () {
               setState(() => _selectedTypeFilter = null);
               Navigator.pop(context);
@@ -234,14 +237,14 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
     );
   }
 
-  void _showConditionFilterDialog() {
+  void _showConditionFilterDialog(AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Filter by Condition'),
+        title: Text(l10n.filterByCondition),
         children: [
           ListTile(
-            title: const Text('All Conditions'),
+            title: Text(l10n.allConditions),
             onTap: () {
               setState(() => _selectedConditionFilter = null);
               Navigator.pop(context);
@@ -259,7 +262,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -267,7 +270,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
           Icon(Icons.search_off, size: 64, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
-            'No fish listings found',
+            l10n.noFishListingsFound,
             style: TextStyle(
               fontSize: 18,
               color: Colors.grey.shade600,
@@ -276,7 +279,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
           ),
           const SizedBox(height: 8),
           Text(
-            'Try adjusting your filters',
+            l10n.tryAdjustingFilters,
             style: TextStyle(color: Colors.grey.shade500),
           ),
         ],
@@ -498,7 +501,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
     }
   }
 
-  Widget _buildSellFishTab() {
+  Widget _buildSellFishTab(AppLocalizations l10n) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: SellFishForm(
@@ -509,8 +512,8 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
           _tabController.animateTo(0);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Your fish listing has been posted!'),
+              SnackBar(
+                content: Text(l10n.yourFishListingPosted),
                 backgroundColor: Colors.green,
               ),
             );
@@ -520,7 +523,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
     );
   }
 
-  Widget _buildSellerOrdersTab() {
+  Widget _buildSellerOrdersTab(AppLocalizations l10n) {
     final orders = _marketplaceService.orders;
 
     if (orders.isEmpty) {
@@ -531,7 +534,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
             Icon(Icons.inbox_outlined, size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
-              'No orders yet',
+              l10n.noOrdersYet,
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey.shade600,
@@ -540,7 +543,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
             ),
             const SizedBox(height: 8),
             Text(
-              'Orders from buyers will appear here',
+              l10n.ordersWillAppearHere,
               style: TextStyle(color: Colors.grey.shade500),
             ),
           ],
@@ -552,12 +555,12 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
       padding: const EdgeInsets.all(16),
       itemCount: orders.length,
       itemBuilder: (context, index) {
-        return _buildOrderCard(orders[index]);
+        return _buildOrderCard(orders[index], l10n);
       },
     );
   }
 
-  Widget _buildOrderCard(Order order) {
+  Widget _buildOrderCard(Order order, AppLocalizations l10n) {
     Color statusColor;
     IconData statusIcon;
 
@@ -633,7 +636,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
               children: [
                 Icon(Icons.person, size: 16, color: Colors.grey.shade600),
                 const SizedBox(width: 4),
-                Text('Buyer: ${order.buyer.name}'),
+                Text('${l10n.buyer}: ${order.buyer.name}'),
               ],
             ),
             const SizedBox(height: 4),
@@ -649,7 +652,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
               children: [
                 Icon(Icons.payments, size: 16, color: Colors.grey.shade600),
                 const SizedBox(width: 4),
-                Text('Payment: ${order.paymentMethod.displayName}'),
+                Text('${l10n.payment}: ${order.paymentMethod.displayName}'),
               ],
             ),
             const SizedBox(height: 4),
@@ -658,7 +661,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
                 Icon(Icons.attach_money, size: 16, color: Colors.grey.shade600),
                 const SizedBox(width: 4),
                 Text(
-                  'Total: ${order.totalPrice.toStringAsFixed(2)} BD',
+                  '${l10n.total}: ${order.totalPrice.toStringAsFixed(2)} BD',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -681,7 +684,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
                         Icon(Icons.receipt_long, size: 16, color: Colors.blue.shade700),
                         const SizedBox(width: 4),
                         Text(
-                          'Payment Proof',
+                          l10n.paymentProof,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue.shade700,
@@ -705,7 +708,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Tap to view full image',
+                      l10n.tapToViewFullImage,
                       style: TextStyle(
                         color: Colors.blue.shade400,
                         fontSize: 11,
@@ -721,9 +724,9 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => _showRejectDialog(order),
+                      onPressed: () => _showRejectDialog(order, l10n),
                       icon: const Icon(Icons.close, color: Colors.red),
-                      label: const Text('Reject'),
+                      label: Text(l10n.reject),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red,
                         side: const BorderSide(color: Colors.red),
@@ -733,9 +736,9 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () => _acceptOrder(order),
+                      onPressed: () => _acceptOrder(order, l10n),
                       icon: const Icon(Icons.check),
-                      label: const Text('Accept'),
+                      label: Text(l10n.accept),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
@@ -750,9 +753,9 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => _completeOrder(order),
+                  onPressed: () => _completeOrder(order, l10n),
                   icon: const Icon(Icons.done_all),
-                  label: const Text('Mark as Completed'),
+                  label: Text(l10n.markAsCompleted),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 22, 62, 98),
                     foregroundColor: Colors.white,
@@ -766,36 +769,36 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
     );
   }
 
-  void _acceptOrder(Order order) async {
+  void _acceptOrder(Order order, AppLocalizations l10n) async {
     await _marketplaceService.acceptOrder(order.id);
     setState(() {});
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Order accepted!'),
+        SnackBar(
+          content: Text(l10n.orderAccepted),
           backgroundColor: Colors.green,
         ),
       );
     }
   }
 
-  void _showRejectDialog(Order order) {
+  void _showRejectDialog(Order order, AppLocalizations l10n) {
     final reasonController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reject Order'),
+        title: Text(l10n.rejectOrder),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Are you sure you want to reject this order?'),
+            Text(l10n.areYouSureRejectOrder),
             const SizedBox(height: 16),
             TextField(
               controller: reasonController,
-              decoration: const InputDecoration(
-                labelText: 'Reason (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.reasonOptional,
+                border: const OutlineInputBorder(),
               ),
               maxLines: 2,
             ),
@@ -804,7 +807,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -816,28 +819,28 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
               setState(() {});
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Order rejected'),
+                  SnackBar(
+                    content: Text(l10n.orderRejected),
                     backgroundColor: Colors.orange,
                   ),
                 );
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Reject', style: TextStyle(color: Colors.white)),
+            child: Text(l10n.reject, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
 
-  void _completeOrder(Order order) async {
+  void _completeOrder(Order order, AppLocalizations l10n) async {
     await _marketplaceService.completeOrder(order.id);
     setState(() {});
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Order marked as completed!'),
+        SnackBar(
+          content: Text(l10n.orderCompleted),
           backgroundColor: Colors.blue,
         ),
       );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/fish_classification_provider.dart';
+import '../l10n/app_localizations.dart';
 
 class FishRecognitionScreen extends ConsumerStatefulWidget {
   const FishRecognitionScreen({super.key});
@@ -91,24 +92,25 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
     final classificationState = ref.watch(fishClassificationProvider);
     final isInitialized = classificationState.isInitialized;
     final hasError = classificationState.error != null && !isInitialized;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fish Recognition'),
+        title: Text(l10n.fishRecognition),
         centerTitle: true,
         backgroundColor: const Color(0xFF0077BE),
         foregroundColor: Colors.white,
       ),
       body: hasError
-          ? _buildErrorView(classificationState.error!)
+          ? _buildErrorView(context, classificationState.error!)
           : !isInitialized
-              ? const Center(
+              ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text('Loading recognition model...'),
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      Text(l10n.loadingRecognitionModel),
                     ],
                   ),
                 )
@@ -131,18 +133,18 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                               color: Colors.blue[700],
                             ),
                             const SizedBox(height: 12),
-                            const Text(
-                              'Take a photo of fish or shrimp',
-                              style: TextStyle(
+                            Text(
+                              l10n.takePhotoOfFish,
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 8),
-                            const Text(
-                              'The system will identify the species automatically',
-                              style: TextStyle(
+                            Text(
+                              l10n.systemWillIdentify,
+                              style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey,
                               ),
@@ -164,9 +166,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                                 ? null
                                 : _pickImageFromCamera,
                             icon: const Icon(Icons.camera_alt, size: 28),
-                            label: const Text(
-                              'Camera',
-                              style: TextStyle(fontSize: 16),
+                            label: Text(
+                              l10n.camera,
+                              style: const TextStyle(fontSize: 16),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF0077BE),
@@ -185,9 +187,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                                 ? null
                                 : _pickImageFromGallery,
                             icon: const Icon(Icons.photo_library, size: 28),
-                            label: const Text(
-                              'Gallery',
-                              style: TextStyle(fontSize: 16),
+                            label: Text(
+                              l10n.gallery,
+                              style: const TextStyle(fontSize: 16),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.teal,
@@ -220,17 +222,17 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                               Container(
                                 height: 300,
                                 color: Colors.black54,
-                                child: const Center(
+                                child: Center(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      CircularProgressIndicator(
+                                      const CircularProgressIndicator(
                                         color: Colors.white,
                                       ),
-                                      SizedBox(height: 12),
+                                      const SizedBox(height: 12),
                                       Text(
-                                        'Analyzing...',
-                                        style: TextStyle(
+                                        l10n.analyzing,
+                                        style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
                                         ),
@@ -247,7 +249,7 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
 
                     // Results
                     if (classificationState.result != null)
-                      _buildResultCard(classificationState.result!),
+                      _buildResultCard(context, classificationState.result!),
 
                     // Error message
                     if (classificationState.error != null)
@@ -277,7 +279,7 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                         child: OutlinedButton.icon(
                           onPressed: _resetClassification,
                           icon: const Icon(Icons.refresh),
-                          label: const Text('New Image'),
+                          label: Text(l10n.newImage),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             side: const BorderSide(color: Color(0xFF0077BE)),
@@ -299,9 +301,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                               children: [
                                 Icon(Icons.info, color: Colors.blue[700]),
                                 const SizedBox(width: 8),
-                                const Text(
-                                  'Supported Species',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.supportedSpecies,
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
@@ -324,8 +326,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
     );
   }
 
-  Widget _buildResultCard(result) {
+  Widget _buildResultCard(BuildContext context, result) {
     final isConfident = result.isConfident;
+    final l10n = AppLocalizations.of(context)!;
 
     return Card(
       elevation: 4,
@@ -352,9 +355,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Confidence: ',
-                  style: TextStyle(fontSize: 16),
+                Text(
+                  '${l10n.confidence}: ',
+                  style: const TextStyle(fontSize: 16),
                 ),
                 Text(
                   '${(result.confidence * 100).toStringAsFixed(1)}%',
@@ -374,14 +377,14 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                   color: Colors.orange[100],
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.lightbulb_outline, color: Colors.orange),
-                    SizedBox(width: 8),
+                    const Icon(Icons.lightbulb_outline, color: Colors.orange),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Try taking a clearer photo for better results',
-                        style: TextStyle(fontSize: 13),
+                        l10n.tryTakingClearerPhoto,
+                        style: const TextStyle(fontSize: 13),
                       ),
                     ),
                   ],
@@ -414,7 +417,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
     );
   }
 
-  Widget _buildErrorView(String error) {
+  Widget _buildErrorView(BuildContext context, String error) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -423,9 +428,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
-            const Text(
-              'Failed to load recognition model',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.failedToLoadModel,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -439,7 +444,7 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                 ref.read(fishClassificationProvider.notifier).initialize();
               },
               icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              label: Text(l10n.tryAgain),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0077BE),
                 foregroundColor: Colors.white,

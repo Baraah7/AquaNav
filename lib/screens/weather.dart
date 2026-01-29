@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../utilities/weather_api_service.dart';
 import '../models/weather/weather_response_model.dart';
 import '../widgets/weather/weather_list.dart';
+import '../l10n/app_localizations.dart';
 
 class Weather extends StatefulWidget {
   const Weather({super.key});
@@ -83,6 +84,8 @@ class _WeatherPageState extends State<Weather> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
@@ -125,7 +128,7 @@ class _WeatherPageState extends State<Weather> {
                                 color: Colors.white70, size: 64),
                             const SizedBox(height: 16),
                             Text(
-                              'Unable to load weather',
+                              l10n.unableToLoadWeather,
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.9),
                                 fontSize: 18,
@@ -144,7 +147,7 @@ class _WeatherPageState extends State<Weather> {
                             ElevatedButton.icon(
                               onPressed: _loadWeatherData,
                               icon: const Icon(Icons.refresh),
-                              label: const Text('Try Again'),
+                              label: Text(l10n.tryAgain),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white24,
                                 foregroundColor: Colors.white,
@@ -155,10 +158,10 @@ class _WeatherPageState extends State<Weather> {
                       )
                     : weatherData != null
                         ? WeatherList(weatherData: weatherData!)
-                        : const Center(
+                        : Center(
                             child: Text(
-                              'No data available',
-                              style: TextStyle(color: Colors.white70),
+                              l10n.noDataAvailable,
+                              style: const TextStyle(color: Colors.white70),
                             ),
                           ),
           ),

@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:Bahaar/screens/weather.dart';
 import 'package:Bahaar/screens/integrated_map.dart';
 import 'package:Bahaar/screens/mariner_harvest.dart';
+import 'package:Bahaar/screens/settings_screen.dart';
 import 'package:Bahaar/widgets/main_page_cards.dart';
+import 'package:Bahaar/widgets/language_switcher.dart';
 import 'package:Bahaar/screens/fish_recognition_screen.dart';
+import 'package:Bahaar/providers/language_provider.dart';
+import 'l10n/app_localizations.dart';
 import 'app_start.dart';
 
 Future<void> main() async {
@@ -17,48 +20,55 @@ Future<void> main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(languageProvider);
+
     return MaterialApp(
       title: 'Bahaar',
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
       home: const AppStart(),
       debugShowCheckedModeBanner: false,
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends ConsumerWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
 
-class _MyHomePageState extends State<MyHomePage> {
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: const Text(
-          'Bahaar',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        title: Text(
+          l10n.appName,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
         backgroundColor: const Color.fromARGB(255, 22, 62, 98),
         foregroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
         actions: [
+          const LanguageSwitcher(),
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => FirebaseAuth.instance.signOut(),
-            tooltip: 'Sign Out',
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+            tooltip: l10n.settings,
           ),
         ],
       ),
@@ -67,21 +77,21 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
-              'Welcome to Bahaar',
-              style: TextStyle(
+            Text(
+              l10n.welcomeToBahaar,
+              style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: Color.fromARGB(255, 52, 59, 138),
               ),
             ),
-            
+
             const SizedBox(height: 30),
 
             MainPageCard(
               icon: Icons.map,
-              title: 'Fishing Map',
-              subtitle: 'Interactive map with depth colors',
+              title: l10n.fishingMap,
+              subtitle: l10n.fishingMapSubtitle,
               onTap: () {
                 Navigator.push(
                   context,
@@ -94,8 +104,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
             MainPageCard(
               icon: Icons.cloud,
-              title: 'Weather',
-              subtitle: 'Check marine weather',
+              title: l10n.weather,
+              subtitle: l10n.weatherSubtitle,
               onTap: () {
                 Navigator.push(
                   context,
@@ -108,8 +118,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
             MainPageCard(
               icon: Icons.camera_alt,
-              title: 'Fish Recognition',
-              subtitle: 'Identify fish species',
+              title: l10n.fishRecognition,
+              subtitle: l10n.fishRecognitionSubtitle,
               onTap: () {
                 Navigator.push(
                   context,
@@ -122,8 +132,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
             MainPageCard(
               icon: Icons.sailing,
-              title: 'Mariner Harvest',
-              subtitle: 'Buy & sell fresh fish',
+              title: l10n.marinerHarvest,
+              subtitle: l10n.marinerHarvestSubtitle,
               onTap: () {
                 Navigator.push(
                   context,
