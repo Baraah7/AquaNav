@@ -13,7 +13,9 @@ class AuthProvider with ChangeNotifier {
   String? error;
 
   Future<void> register({
-    required String name,
+    required String firstName,
+    required String lastName,
+    required String userName,
     required String email,
     required String password,
   }) async {
@@ -22,13 +24,16 @@ class AuthProvider with ChangeNotifier {
       error = null;
       notifyListeners();
 
-      final user = await _AuthenticationService.register(email, password, displayName: name);
+      final displayName = '$firstName $lastName';
+      final user = await _AuthenticationService.register(email, password, displayName: displayName);
 
       if (user != null) {
         final appUser = AppUser.User(
           id: user.uid,
           email: user.email ?? email,
-          userName: name,
+          firstName: firstName,
+          lastName: lastName,
+          userName: userName,
           password: password,
         );
         await _firestoreService.createUser(appUser);
