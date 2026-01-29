@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 
@@ -52,38 +52,12 @@ class FishClassifierService {
     if (_isInitialized) return;
 
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      // Load model
-      _interpreter = await Interpreter.fromAsset(_modelPath);
-
-      // Verify input tensor shape and type (debug mode only)
-      if (kDebugMode) {
-        final inputTensor = _interpreter!.getInputTensor(0);
-        final outputTensor = _interpreter!.getOutputTensor(0);
-
-        debugPrint('Fish Classifier Model Info:');
-        debugPrint('  Input shape: ${inputTensor.shape}');  // Expected: [1, 224, 224, 3]
-        debugPrint('  Input type: ${inputTensor.type}');    // Expected: float32
-        debugPrint('  Output shape: ${outputTensor.shape}'); // Expected: [1, 4]
-        debugPrint('  Output type: ${outputTensor.type}');
-      }
-
-=======
->>>>>>> e-commerce
-=======
->>>>>>> e-commerce
       // Load labels
       final labelsData = await rootBundle.loadString(_labelsPath);
       _labels = labelsData
           .split('\n')
           .where((label) => label.trim().isNotEmpty)
           .toList();
-
-      if (kDebugMode) {
-        debugPrint('  Labels loaded: ${_labels!.length}'); // Expected: 4
-        debugPrint('  Label names: $_labels');
-      }
 
       _isInitialized = true;
     } catch (e) {
@@ -101,43 +75,7 @@ class FishClassifierService {
     }
 
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      // Read image file
-      final imageBytes = await imageFile.readAsBytes();
-      final image = img.decodeImage(imageBytes);
-
-      if (image == null) {
-        throw Exception('Could not decode image.');
-      }
-
-      // Preprocess image
-      final input = _preprocessImage(image);
-
-      // Run inference
-      final output = List.filled(_labels!.length, 0.0).reshape([1, _labels!.length]);
-      _interpreter!.run(input, output);
-
-      // Get results
-      final results = output[0] as List<double>;
-      final maxIndex = results.indexOf(results.reduce((a, b) => a > b ? a : b));
-
-      // Debug: Log all predictions (debug mode only)
-      if (kDebugMode) {
-        debugPrint('Classification results (raw): $results');
-        debugPrint('Classifications:');
-        for (int i = 0; i < _labels!.length; i++) {
-          debugPrint('  [$i] ${_labels![i]}: ${(results[i] * 100).toStringAsFixed(2)}%');
-        }
-        debugPrint('SELECTED: ${_labels![maxIndex]} at index $maxIndex with ${(results[maxIndex] * 100).toStringAsFixed(1)}% confidence');
-      }
-
-=======
       // Mock classification for now
->>>>>>> e-commerce
-=======
-      // Mock classification for now
->>>>>>> e-commerce
       return FishClassification(
         className: _labels!.first,
         confidence: 0.85,
@@ -155,44 +93,7 @@ class FishClassifierService {
     }
 
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      // Decode image
-      final image = img.decodeImage(imageBytes);
-
-      if (image == null) {
-        throw Exception('Failed to decode image');
-      }
-
-      // Preprocess image
-      final input = _preprocessImage(image);
-
-      // Run inference
-      final output = List.filled(_labels!.length, 0.0).reshape([1, _labels!.length]);
-      _interpreter!.run(input, output);
-
-      // Get results
-      final probabilities = output[0] as List<double>;
-      final maxIndex = probabilities.indexOf(
-        probabilities.reduce((a, b) => a > b ? a : b),
-      );
-
-      // Debug: Log all predictions (debug mode only)
-      if (kDebugMode) {
-        debugPrint('Classification results (raw): $probabilities');
-        debugPrint('Classifications:');
-        for (int i = 0; i < _labels!.length; i++) {
-          debugPrint('  [$i] ${_labels![i]}: ${(probabilities[i] * 100).toStringAsFixed(2)}%');
-        }
-        debugPrint('SELECTED: ${_labels![maxIndex]} at index $maxIndex with ${(probabilities[maxIndex] * 100).toStringAsFixed(1)}% confidence');
-      }
-
-=======
       // Mock classification for now
->>>>>>> e-commerce
-=======
-      // Mock classification for now
->>>>>>> e-commerce
       return FishClassification(
         className: _labels!.first,
         confidence: 0.85,
@@ -203,36 +104,17 @@ class FishClassifierService {
     }
   }
 
-  /// Center crop image to square (critical for camera images)
-  /// This ensures the fish fills the frame similar to training data
-  img.Image _centerCrop(img.Image image) {
-    final size = image.width < image.height ? image.width : image.height;
-    final x = (image.width - size) ~/ 2;
-    final y = (image.height - size) ~/ 2;
-    return img.copyCrop(image, x: x, y: y, width: size, height: size);
-  }
-
   /// Preprocess image to model input format
-  /// Pipeline: center crop → resize → normalize
-  /// Uses MobileNet/EfficientNet preprocessing: (pixel / 127.5) - 1.0
-  /// This matches the preprocess_input function used during training
   List<List<List<List<double>>>> _preprocessImage(img.Image image) {
-    // Step 1: Center crop to square (critical for camera images)
-    final cropped = _centerCrop(image);
-
-    // Step 2: Resize to 224x224
+    // Resize to 224x224
     final resized = img.copyResize(
-      cropped,
+      image,
       width: _inputSize,
       height: _inputSize,
-      interpolation: img.Interpolation.linear,
+      interpolation: img.Interpolation.cubic,
     );
 
-    // Step 3: Convert to normalized float array [1, 224, 224, 3]
-    // Shape: [1, 224, 224, 3] (NHWC format)
-    // Type: float32
-    // Color: RGB
-    // Range: [-1.0, 1.0] using (pixel / 127.5) - 1.0
+    // Convert to normalized float array [1, 224, 224, 3]
     final input = List.generate(
       1,
       (_) => List.generate(
@@ -242,9 +124,9 @@ class FishClassifierService {
           (x) {
             final pixel = resized.getPixel(x, y);
             return [
-              (pixel.r / 127.5) - 1.0, // MobileNet/EfficientNet normalization
-              (pixel.g / 127.5) - 1.0,
-              (pixel.b / 127.5) - 1.0,
+              pixel.r / 255.0, // Normalize to [0, 1]
+              pixel.g / 255.0,
+              pixel.b / 255.0,
             ];
           },
         ),
