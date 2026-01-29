@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:Bahaar/screens/weather.dart';
 import 'package:Bahaar/screens/integrated_map.dart';
+import 'package:Bahaar/screens/mariner_harvest.dart';
 import 'package:Bahaar/widgets/main_page_cards.dart';
 import 'package:Bahaar/screens/fish_recognition_screen.dart';
 import 'app_start.dart';
@@ -122,10 +123,11 @@ class _MyHomePageState extends State<MyHomePage> {
             MainPageCard(
               icon: Icons.sailing,
               title: 'Mariner Harvest',
-              subtitle: 'Track your catches',
+              subtitle: 'Buy & sell fresh fish',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Mariner Harvest - Coming Soon')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MarinerHarvestPage()),
                 );
               },
             ),

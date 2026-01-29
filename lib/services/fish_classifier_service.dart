@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
-import 'package:tflite_flutter/tflite_flutter.dart';
 
 class FishClassification {
   final String className;
@@ -41,7 +40,6 @@ class FishClassification {
 
 /// TensorFlow Lite model service for fish classification
 class FishClassifierService {
-  Interpreter? _interpreter;
   List<String>? _labels;
   bool _isInitialized = false;
 
@@ -54,6 +52,7 @@ class FishClassifierService {
     if (_isInitialized) return;
 
     try {
+<<<<<<< HEAD
       // Load model
       _interpreter = await Interpreter.fromAsset(_modelPath);
 
@@ -69,6 +68,8 @@ class FishClassifierService {
         debugPrint('  Output type: ${outputTensor.type}');
       }
 
+=======
+>>>>>>> e-commerce
       // Load labels
       final labelsData = await rootBundle.loadString(_labelsPath);
       _labels = labelsData
@@ -97,6 +98,7 @@ class FishClassifierService {
     }
 
     try {
+<<<<<<< HEAD
       // Read image file
       final imageBytes = await imageFile.readAsBytes();
       final image = img.decodeImage(imageBytes);
@@ -126,9 +128,12 @@ class FishClassifierService {
         debugPrint('SELECTED: ${_labels![maxIndex]} at index $maxIndex with ${(results[maxIndex] * 100).toStringAsFixed(1)}% confidence');
       }
 
+=======
+      // Mock classification for now
+>>>>>>> e-commerce
       return FishClassification(
-        className: _labels![maxIndex],
-        confidence: results[maxIndex],
+        className: _labels!.first,
+        confidence: 0.85,
         timestamp: DateTime.now(),
       );
     } catch (e) {
@@ -143,6 +148,7 @@ class FishClassifierService {
     }
 
     try {
+<<<<<<< HEAD
       // Decode image
       final image = img.decodeImage(imageBytes);
 
@@ -173,9 +179,12 @@ class FishClassifierService {
         debugPrint('SELECTED: ${_labels![maxIndex]} at index $maxIndex with ${(probabilities[maxIndex] * 100).toStringAsFixed(1)}% confidence');
       }
 
+=======
+      // Mock classification for now
+>>>>>>> e-commerce
       return FishClassification(
-        className: _labels![maxIndex],
-        confidence: probabilities[maxIndex],
+        className: _labels!.first,
+        confidence: 0.85,
         timestamp: DateTime.now(),
       );
     } catch (e) {
@@ -242,8 +251,6 @@ class FishClassifierService {
 
   /// Dispose resources
   void dispose() {
-    _interpreter?.close();
-    _interpreter = null;
     _isInitialized = false;
   }
 }
