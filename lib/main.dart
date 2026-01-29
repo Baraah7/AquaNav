@@ -20,11 +20,16 @@ Future<void> main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  Widget build(BuildContext context) {
     final locale = ref.watch(languageProvider);
 
     return MaterialApp(
@@ -39,12 +44,20 @@ class MyApp extends ConsumerWidget {
   }
 }
 
-class MyHomePage extends ConsumerWidget {
+class MyHomePage extends ConsumerStatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends ConsumerState<MyHomePage> {
+  int _index = 1;
+  late final PageController _controller = PageController(initialPage: _index);
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -72,78 +85,55 @@ class MyHomePage extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              l10n.welcomeToBahaar,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 52, 59, 138),
-              ),
-            ),
+      body: PageView(
+        controller: _controller,
+        onPageChanged: (index){
+          setState(() {
+            _index = index;
+          });
+        },
 
-            const SizedBox(height: 30),
-
-            MainPageCard(
-              icon: Icons.map,
-              title: l10n.fishingMap,
-              subtitle: l10n.fishingMapSubtitle,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const IntegratedMap()),
-                );
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            MainPageCard(
-              icon: Icons.cloud,
-              title: l10n.weather,
-              subtitle: l10n.weatherSubtitle,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Weather()),
-                );
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            MainPageCard(
-              icon: Icons.camera_alt,
-              title: l10n.fishRecognition,
-              subtitle: l10n.fishRecognitionSubtitle,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const FishRecognitionScreen()),
-                );
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            MainPageCard(
-              icon: Icons.sailing,
-              title: l10n.marinerHarvest,
-              subtitle: l10n.marinerHarvestSubtitle,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MarinerHarvestPage()),
-                );
-              },
-            ),
-          ],
-        ),
+        children: const [
+          IntegratedMap(),
+          Weather(),
+          FishRecognitionScreen(),
+          MarinerHarvestPage(),
+        ]
       ),
+      
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _index,
+        onTap: (index) {
+          _controller.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+        items: [
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.map),
+            label: 'Map',  
+            backgroundColor: Color.fromARGB(255, 19, 8, 79)
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.cloud),
+            label: 'Weather',
+            backgroundColor: Color.fromARGB(255, 19, 8, 79)
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.camera_alt),
+            label: 'Fish ID',
+            backgroundColor: Color.fromARGB(255, 19, 8, 79)
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.sailing),
+            label: 'Mariner Harvest',
+            backgroundColor: Color.fromARGB(255, 19, 8, 79)
+          ),
+        ],
+      ),
+
     );
   }
 }

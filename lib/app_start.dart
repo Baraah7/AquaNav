@@ -55,7 +55,7 @@ class AppStart extends StatelessWidget {
               return _CreateUserDocument(user: user);
             }
 
-            return const MyHomePage(title: 'Bahaar Home Page');
+            return MyHomePage(title: 'Bahaar Home Page');
           },
         );
       },
