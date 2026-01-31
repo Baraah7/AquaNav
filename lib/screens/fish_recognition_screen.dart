@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/fish_classification_provider.dart';
+import '../l10n/app_localizations.dart';
 
 class FishRecognitionScreen extends ConsumerStatefulWidget {
   const FishRecognitionScreen({super.key});
@@ -41,7 +42,7 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
         await _classifyImage(File(photo.path));
       }
     } catch (e) {
-      _showError('فشل فتح الكاميرا: $e');
+      _showError('Failed to open camera: $e');
     }
   }
 
@@ -61,7 +62,7 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
         await _classifyImage(File(image.path));
       }
     } catch (e) {
-      _showError('فشل اختيار الصورة: $e');
+      _showError('Failed to select image: $e');
     }
   }
 
@@ -91,24 +92,25 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
     final classificationState = ref.watch(fishClassificationProvider);
     final isInitialized = classificationState.isInitialized;
     final hasError = classificationState.error != null && !isInitialized;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تعرف على الأسماك'),
+        title: Text(l10n.fishRecognition),
         centerTitle: true,
         backgroundColor: const Color(0xFF0077BE),
         foregroundColor: Colors.white,
       ),
       body: hasError
-          ? _buildErrorView(classificationState.error!)
+          ? _buildErrorView(context, classificationState.error!)
           : !isInitialized
-              ? const Center(
+              ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text('جاري تحميل نموذج التعرف...'),
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      Text(l10n.loadingRecognitionModel),
                     ],
                   ),
                 )
@@ -131,18 +133,18 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                               color: Colors.blue[700],
                             ),
                             const SizedBox(height: 12),
-                            const Text(
-                              'التقط صورة للسمكة أو الروبيان',
-                              style: TextStyle(
+                            Text(
+                              l10n.takePhotoOfFish,
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 8),
-                            const Text(
-                              'سيتعرف النظام على النوع تلقائياً',
-                              style: TextStyle(
+                            Text(
+                              l10n.systemWillIdentify,
+                              style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey,
                               ),
@@ -164,9 +166,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                                 ? null
                                 : _pickImageFromCamera,
                             icon: const Icon(Icons.camera_alt, size: 28),
-                            label: const Text(
-                              'كاميرا',
-                              style: TextStyle(fontSize: 16),
+                            label: Text(
+                              l10n.camera,
+                              style: const TextStyle(fontSize: 16),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF0077BE),
@@ -185,9 +187,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                                 ? null
                                 : _pickImageFromGallery,
                             icon: const Icon(Icons.photo_library, size: 28),
-                            label: const Text(
-                              'معرض',
-                              style: TextStyle(fontSize: 16),
+                            label: Text(
+                              l10n.gallery,
+                              style: const TextStyle(fontSize: 16),
                             ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.teal,
@@ -220,17 +222,17 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                               Container(
                                 height: 300,
                                 color: Colors.black54,
-                                child: const Center(
+                                child: Center(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      CircularProgressIndicator(
+                                      const CircularProgressIndicator(
                                         color: Colors.white,
                                       ),
-                                      SizedBox(height: 12),
+                                      const SizedBox(height: 12),
                                       Text(
-                                        'جاري التحليل...',
-                                        style: TextStyle(
+                                        l10n.analyzing,
+                                        style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
                                         ),
@@ -247,7 +249,7 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
 
                     // Results
                     if (classificationState.result != null)
-                      _buildResultCard(classificationState.result!),
+                      _buildResultCard(context, classificationState.result!),
 
                     // Error message
                     if (classificationState.error != null)
@@ -277,7 +279,7 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                         child: OutlinedButton.icon(
                           onPressed: _resetClassification,
                           icon: const Icon(Icons.refresh),
-                          label: const Text('صورة جديدة'),
+                          label: Text(l10n.newImage),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             side: const BorderSide(color: Color(0xFF0077BE)),
@@ -299,9 +301,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                               children: [
                                 Icon(Icons.info, color: Colors.blue[700]),
                                 const SizedBox(width: 8),
-                                const Text(
-                                  'الأنواع المدعومة',
-                                  style: TextStyle(
+                                Text(
+                                  l10n.supportedSpecies,
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
@@ -309,10 +311,10 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                               ],
                             ),
                             const SizedBox(height: 12),
-                            _buildSpeciesItem('دنيس (Gilt-Head Bream)'),
-                            _buildSpeciesItem('سكمبري (Hourse Mackerel)'),
-                            _buildSpeciesItem('قاروص (Sea Bass)'),
-                            _buildSpeciesItem('روبيان (Shrimp)'),
+                            _buildSpeciesItem('Gilt-Head Bream'),
+                            _buildSpeciesItem('Horse Mackerel'),
+                            _buildSpeciesItem('Sea Bass'),
+                            _buildSpeciesItem('Shrimp'),
                           ],
                         ),
                       ),
@@ -324,8 +326,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
     );
   }
 
-  Widget _buildResultCard(result) {
+  Widget _buildResultCard(BuildContext context, result) {
     final isConfident = result.isConfident;
+    final l10n = AppLocalizations.of(context)!;
 
     return Card(
       elevation: 4,
@@ -341,28 +344,20 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              result.arabicName,
+              result.className,
               style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 4),
-            Text(
-              result.className,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-              ),
-            ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'دقة التعرف: ',
-                  style: TextStyle(fontSize: 16),
+                Text(
+                  '${l10n.confidence}: ',
+                  style: const TextStyle(fontSize: 16),
                 ),
                 Text(
                   '${(result.confidence * 100).toStringAsFixed(1)}%',
@@ -382,14 +377,14 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                   color: Colors.orange[100],
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.lightbulb_outline, color: Colors.orange),
-                    SizedBox(width: 8),
+                    const Icon(Icons.lightbulb_outline, color: Colors.orange),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'جرب التقاط صورة أوضح للحصول على نتيجة أدق',
-                        style: TextStyle(fontSize: 13),
+                        l10n.tryTakingClearerPhoto,
+                        style: const TextStyle(fontSize: 13),
                       ),
                     ),
                   ],
@@ -422,7 +417,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
     );
   }
 
-  Widget _buildErrorView(String error) {
+  Widget _buildErrorView(BuildContext context, String error) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -431,9 +428,9 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
-            const Text(
-              'فشل تحميل نموذج التعرف',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              l10n.failedToLoadModel,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -447,7 +444,7 @@ class _FishRecognitionScreenState extends ConsumerState<FishRecognitionScreen> {
                 ref.read(fishClassificationProvider.notifier).initialize();
               },
               icon: const Icon(Icons.refresh),
-              label: const Text('إعادة المحاولة'),
+              label: Text(l10n.tryAgain),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0077BE),
                 foregroundColor: Colors.white,

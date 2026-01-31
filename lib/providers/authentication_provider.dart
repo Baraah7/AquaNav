@@ -13,27 +13,84 @@ class AuthProvider with ChangeNotifier {
   String? error;
 
   Future<void> register({
-    required String name,
+    required String firstName,
+    required String lastName,
+    required String userName,
     required String email,
     required String password,
   }) async {
     try {
       isLoading = true;
+      error = null;
       notifyListeners();
 
-      final user = await _AuthenticationService.register(email, password);
+      final displayName = '$firstName $lastName';
+      final user = await _AuthenticationService.register(email, password, displayName: displayName);
 
       if (user != null) {
         final appUser = AppUser.User(
           id: user.uid,
           email: user.email ?? email,
-          userName: name,
+          firstName: firstName,
+          lastName: lastName,
+          userName: userName,
           password: password,
         );
         await _firestoreService.createUser(appUser);
+        print('User document created successfully for ${user.uid}');
+      } else {
+        error = 'Registration failed - no user returned';
       }
     } catch (e) {
       error = e.toString();
+      print('Registration error: $e');
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> login({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      isLoading = true;
+      error = null;
+      notifyListeners();
+
+      final user = await _AuthenticationService.login(email, password);
+
+      if (user == null) {
+        error = 'Invalid email or password';
+        return false;
+      }
+      return true;
+    } catch (e) {
+      error = e.toString();
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> signInAsGuest() async {
+    try {
+      isLoading = true;
+      error = null;
+      notifyListeners();
+
+      final user = await _AuthenticationService.signInAsGuest();
+
+      if (user == null) {
+        error = 'Failed to sign in as guest';
+        return false;
+      }
+      return true;
+    } catch (e) {
+      error = e.toString();
+      return false;
     } finally {
       isLoading = false;
       notifyListeners();

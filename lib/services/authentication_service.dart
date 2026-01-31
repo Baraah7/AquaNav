@@ -20,17 +20,18 @@ class AuthenticationService {
   }
 
   // Register with email and password
-  Future<User?> register(String email, String password) async {
-    try {
-      UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return userCredential.user;
-    } catch (e) {
-      print('Error registering: $e');
-      return null;
+  Future<User?> register(String email, String password, {String? displayName}) async {
+    UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // Set display name if provided
+    if (displayName != null && userCredential.user != null) {
+      await userCredential.user!.updateDisplayName(displayName);
     }
+
+    return userCredential.user;
   }
 
   // Sign out
@@ -41,6 +42,17 @@ class AuthenticationService {
   // Get current user
   User? getCurrentUser() {
     return _firebaseAuth.currentUser;
+  }
+
+  // Sign in as guest (anonymous)
+  Future<User?> signInAsGuest() async {
+    try {
+      UserCredential userCredential = await _firebaseAuth.signInAnonymously();
+      return userCredential.user;
+    } catch (e) {
+      print('Error signing in as guest: $e');
+      return null;
+    }
   }
 
   Future<void> upgradeGuest({
