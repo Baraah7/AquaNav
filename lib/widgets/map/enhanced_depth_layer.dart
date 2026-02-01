@@ -2,8 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:Bahaar/utilities/map_constants.dart';
-import 'package:Bahaar/services/map_layer_manager.dart';
-import 'package:Bahaar/services/navigation_mask.dart';
+import 'package:Bahaar/services/map/map_layer_manager.dart';
+import 'package:Bahaar/services/map/navigation_mask.dart';
 
 /// Enhanced depth layer widget with multiple visualization options:
 /// 1. Bathymetric (colored depth map)

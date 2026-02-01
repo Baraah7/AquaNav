@@ -1,7 +1,7 @@
 import 'package:latlong2/latlong.dart';
 import 'package:Bahaar/models/navigation/waypoint_model.dart';
 import 'package:Bahaar/models/navigation/marina_model.dart';
-import 'package:Bahaar/services/navigation_mask.dart';
+import 'package:Bahaar/services/map/navigation_mask.dart';
 
 /// Complete navigation route with segments, waypoints, and validation
 class NavigationRoute {

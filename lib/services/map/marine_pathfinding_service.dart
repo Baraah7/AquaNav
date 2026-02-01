@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:collection/collection.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:Bahaar/services/navigation_mask.dart';
+import 'navigation_mask.dart';
 import 'package:Bahaar/models/navigation/route_model.dart';
 import 'package:Bahaar/utilities/navigation_constants.dart';
 

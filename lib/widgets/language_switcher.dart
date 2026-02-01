@@ -16,7 +16,13 @@ class LanguageSwitcher extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(languageProvider);
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
+    
+    // Handle null case gracefully
+    if (l10n == null) {
+      return const SizedBox.shrink();
+    }
+    
     final isArabic = locale.languageCode == 'ar';
 
     if (showLabel) {

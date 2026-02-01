@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:Bahaar/models/navigation/marina_model.dart';
-import 'package:Bahaar/services/navigation_mask.dart';
+import 'navigation_mask.dart';
 
 /// Service for loading, validating, and querying marina/launch point data
 class MarinaDataService {

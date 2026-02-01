@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:latlong2/latlong.dart';
 import 'dart:math';
-import 'package:Bahaar/services/mask_storage_service.dart';
+import 'package:Bahaar/services/map/mask_storage_service.dart';
 
 /// Navigation mask service for validating routes against Bahrain's coastline
 /// Prevents routing through land areas using pre-generated binary mask data

@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/fish_classifier_service.dart';
+import '../services/fishRecognition/fish_classifier_service.dart';
 
 // State class for fish classification
 class FishClassificationState {

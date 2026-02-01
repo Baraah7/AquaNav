@@ -1,10 +1,10 @@
 import 'dart:developer';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:Bahaar/services/osrm_routing_service.dart';
-import 'package:Bahaar/services/marine_pathfinding_service.dart';
-import 'package:Bahaar/services/marina_data_service.dart';
-import 'package:Bahaar/services/navigation_mask.dart';
+import 'package:Bahaar/services/map/osrm_routing_service.dart';
+import 'package:Bahaar/services/map/marine_pathfinding_service.dart';
+import 'package:Bahaar/services/map/marina_data_service.dart';
+import 'package:Bahaar/services/map/navigation_mask.dart';
 import 'package:Bahaar/models/navigation/route_model.dart';
 import 'package:Bahaar/models/navigation/waypoint_model.dart';
 import 'package:Bahaar/models/navigation/marina_model.dart';

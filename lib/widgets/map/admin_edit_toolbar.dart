@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:Bahaar/services/map_layer_manager.dart';
-import 'package:Bahaar/services/navigation_mask.dart';
+import 'package:Bahaar/services/map/map_layer_manager.dart';
+import 'package:Bahaar/services/map/navigation_mask.dart';
 
 /// Floating toolbar for admin mask editing controls
 class AdminEditToolbar extends StatelessWidget {

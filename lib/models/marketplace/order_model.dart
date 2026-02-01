@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
 import 'fish_listing_model.dart';
 
 enum OrderStatus {
@@ -23,42 +24,14 @@ enum OrderStatus {
   }
 }
 
-class BuyerInfo {
-  final String id;
-  final String name;
-  final String phone;
-  final String? location;
-
-  BuyerInfo({
-    required this.id,
-    required this.name,
-    required this.phone,
-    this.location,
-  });
-
-  factory BuyerInfo.fromJson(Map<String, dynamic> json) {
-    return BuyerInfo(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      phone: json['phone'] as String,
-      location: json['location'] as String?,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'phone': phone,
-      'location': location,
-    };
-  }
-}
-
 class Order {
   final String id;
-  final FishListing listing;
-  final BuyerInfo buyer;
+  final String listingId;
+  final String sellerId;
+  final String buyerId;
+  final String buyerName;
+  final String buyerPhone;
+  final String? buyerLocation;
   final PaymentMethod paymentMethod;
   final String? paymentProofImageUrl;
   final DateTime orderedAt;
@@ -69,8 +42,12 @@ class Order {
 
   Order({
     required this.id,
-    required this.listing,
-    required this.buyer,
+    required this.listingId,
+    required this.sellerId,
+    required this.buyerId,
+    required this.buyerName,
+    required this.buyerPhone,
+    this.buyerLocation,
     required this.paymentMethod,
     this.paymentProofImageUrl,
     required this.orderedAt,
@@ -80,12 +57,62 @@ class Order {
     this.respondedAt,
   });
 
-  double get totalPrice => listing.totalPrice;
+  /// Creates an Order from a Firestore document
+  factory Order.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Order(
+      id: doc.id,
+      listingId: data['listingId'] as String,
+      sellerId: data['sellerId'] as String,
+      buyerId: data['buyerId'] as String,
+      buyerName: data['buyerName'] as String,
+      buyerPhone: data['buyerPhone'] as String,
+      buyerLocation: data['buyerLocation'] as String?,
+      paymentMethod: PaymentMethod.values.firstWhere(
+        (e) => e.name == data['paymentMethod'],
+        orElse: () => PaymentMethod.cash,
+      ),
+      paymentProofImageUrl: data['paymentProofImageUrl'] as String?,
+      orderedAt: (data['orderedAt'] as Timestamp).toDate(),
+      status: OrderStatus.values.firstWhere(
+        (e) => e.name == data['status'],
+        orElse: () => OrderStatus.pending,
+      ),
+      sellerNote: data['sellerNote'] as String?,
+      rejectionReason: data['rejectionReason'] as String?,
+      respondedAt: data['respondedAt'] != null
+          ? (data['respondedAt'] as Timestamp).toDate()
+          : null,
+    );
+  }
+
+  /// Converts this Order to a Map for Firestore
+  Map<String, dynamic> toFirestore() {
+    return {
+      'listingId': listingId,
+      'sellerId': sellerId,
+      'buyerId': buyerId,
+      'buyerName': buyerName,
+      'buyerPhone': buyerPhone,
+      'buyerLocation': buyerLocation,
+      'paymentMethod': paymentMethod.name,
+      'paymentProofImageUrl': paymentProofImageUrl,
+      'orderedAt': Timestamp.fromDate(orderedAt),
+      'status': status.name,
+      'sellerNote': sellerNote,
+      'rejectionReason': rejectionReason,
+      'respondedAt': respondedAt != null ? Timestamp.fromDate(respondedAt!) : null,
+    };
+  }
 
   Order copyWith({
     String? id,
-    FishListing? listing,
-    BuyerInfo? buyer,
+    String? listingId,
+    String? sellerId,
+    String? buyerId,
+    String? buyerName,
+    String? buyerPhone,
+    String? buyerLocation,
     PaymentMethod? paymentMethod,
     String? paymentProofImageUrl,
     DateTime? orderedAt,
@@ -96,8 +123,12 @@ class Order {
   }) {
     return Order(
       id: id ?? this.id,
-      listing: listing ?? this.listing,
-      buyer: buyer ?? this.buyer,
+      listingId: listingId ?? this.listingId,
+      sellerId: sellerId ?? this.sellerId,
+      buyerId: buyerId ?? this.buyerId,
+      buyerName: buyerName ?? this.buyerName,
+      buyerPhone: buyerPhone ?? this.buyerPhone,
+      buyerLocation: buyerLocation ?? this.buyerLocation,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       paymentProofImageUrl: paymentProofImageUrl ?? this.paymentProofImageUrl,
       orderedAt: orderedAt ?? this.orderedAt,
@@ -106,43 +137,5 @@ class Order {
       rejectionReason: rejectionReason ?? this.rejectionReason,
       respondedAt: respondedAt ?? this.respondedAt,
     );
-  }
-
-  factory Order.fromJson(Map<String, dynamic> json) {
-    return Order(
-      id: json['id'] as String,
-      listing: FishListing.fromJson(json['listing'] as Map<String, dynamic>),
-      buyer: BuyerInfo.fromJson(json['buyer'] as Map<String, dynamic>),
-      paymentMethod: PaymentMethod.values.firstWhere(
-        (e) => e.name == json['paymentMethod'],
-        orElse: () => PaymentMethod.cash,
-      ),
-      paymentProofImageUrl: json['paymentProofImageUrl'] as String?,
-      orderedAt: DateTime.parse(json['orderedAt'] as String),
-      status: OrderStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => OrderStatus.pending,
-      ),
-      sellerNote: json['sellerNote'] as String?,
-      rejectionReason: json['rejectionReason'] as String?,
-      respondedAt: json['respondedAt'] != null
-          ? DateTime.parse(json['respondedAt'] as String)
-          : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'listing': listing.toJson(),
-      'buyer': buyer.toJson(),
-      'paymentMethod': paymentMethod.name,
-      'paymentProofImageUrl': paymentProofImageUrl,
-      'orderedAt': orderedAt.toIso8601String(),
-      'status': status.name,
-      'sellerNote': sellerNote,
-      'rejectionReason': rejectionReason,
-      'respondedAt': respondedAt?.toIso8601String(),
-    };
   }
 }

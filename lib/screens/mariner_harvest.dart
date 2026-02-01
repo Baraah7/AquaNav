@@ -1,19 +1,22 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/marketplace/fish_listing_model.dart';
 import '../models/marketplace/order_model.dart';
-import '../services/fish_marketplace_service.dart';
+import '../services/marketplace/fish_marketplace_service.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/marketplace/sell_fish_form.dart';
+import '../widgets/marketplace/fish_details_sheet.dart';
+import '../providers/authentication_provider.dart';
 
-class MarinerHarvestPage extends StatefulWidget {
+class MarinerHarvestPage extends ConsumerStatefulWidget {
   const MarinerHarvestPage({super.key});
 
   @override
-  State<MarinerHarvestPage> createState() => _MarinerHarvestPageState();
+  ConsumerState<MarinerHarvestPage> createState() => _MarinerHarvestPageState();
 }
 
-class _MarinerHarvestPageState extends State<MarinerHarvestPage>
+class _MarinerHarvestPageState extends ConsumerState<MarinerHarvestPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late FishMarketplaceService _marketplaceService;
@@ -27,10 +30,38 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _marketplaceService = FishMarketplaceService();
+
+    // Listen to marketplace changes to update UI in real-time
+    _marketplaceService.addListener(_onMarketplaceUpdate);
+
+    // Initialize marketplace service with current user after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeUserData();
+    });
+  }
+
+  void _onMarketplaceUpdate() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _initializeUserData() async {
+    final authProvider = ref.read(authProviderProvider);
+
+    // Ensure user profile is loaded if there's an existing Firebase session
+    await authProvider.initializeAuthState();
+
+    final user = authProvider.currentAppUser;
+    if (user != null) {
+      _marketplaceService.setCurrentUser(user.id);
+    }
   }
 
   @override
   void dispose() {
+    _marketplaceService.removeListener(_onMarketplaceUpdate);
+    _marketplaceService.dispose();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -429,33 +460,64 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
       case FishType.shrimp:
         return Icons.set_meal;
       case FishType.crab:
-      case FishType.lobster:
         return Icons.pest_control;
-      case FishType.squid:
-        return Icons.water;
       default:
         return Icons.phishing;
     }
   }
 
   void _showFishDetails(FishListing listing) {
+    final authProvider = ref.read(authProviderProvider);
+    final user = authProvider.currentAppUser;
+    final fullName = user != null
+        ? '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim()
+        : null;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => FishDetailsSheet(
         listing: listing,
-        onBuy: (paymentMethod, buyerInfo, paymentProofImage) => _processPurchase(listing, paymentMethod, buyerInfo, paymentProofImage),
+        currentUserId: user?.id,
+        currentUserName: fullName?.isNotEmpty == true ? fullName : user?.userName,
+        currentUserPhone: user?.phone,
+        currentUserLocation: user?.location,
+        onBuy: (paymentMethod, buyerName, buyerPhone, buyerLocation, paymentProofImage) =>
+          _processPurchase(listing, paymentMethod, buyerName, buyerPhone, buyerLocation, paymentProofImage),
       ),
     );
   }
 
-  void _processPurchase(FishListing listing, PaymentMethod paymentMethod, BuyerInfo buyerInfo, String? paymentProofImage) async {
+  void _processPurchase(
+    FishListing listing,
+    PaymentMethod paymentMethod,
+    String buyerName,
+    String buyerPhone,
+    String? buyerLocation,
+    String? paymentProofImage,
+  ) async {
+    final authProvider = ref.read(authProviderProvider);
+    final user = authProvider.currentAppUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please login to place an order'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     Navigator.pop(context);
 
     await _marketplaceService.createOrder(
       listing: listing,
-      buyer: buyerInfo,
+      buyerId: user.id,
+      buyerName: buyerName,
+      buyerPhone: buyerPhone,
+      buyerLocation: buyerLocation,
       paymentMethod: paymentMethod,
       paymentProofImageUrl: paymentProofImage,
     );
@@ -502,12 +564,22 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
   }
 
   Widget _buildSellFishTab(AppLocalizations l10n) {
+    final authProvider = ref.watch(authProviderProvider);
+    final user = authProvider.currentAppUser;
+    final fullName = user != null
+        ? '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim()
+        : null;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: SellFishForm(
+        currentUserId: user?.id,
+        currentUserName: fullName?.isNotEmpty == true ? fullName : user?.userName,
+        currentUserPhone: user?.phone,
+        currentUserLocation: user?.location,
         onSubmit: (listing) async {
           await _marketplaceService.addListing(listing);
-          _marketplaceService.setCurrentSeller(listing.seller.id);
+          _marketplaceService.setCurrentUser(listing.sellerId);
           setState(() {});
           _tabController.animateTo(0);
           if (mounted) {
@@ -524,17 +596,106 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
   }
 
   Widget _buildSellerOrdersTab(AppLocalizations l10n) {
-    final orders = _marketplaceService.orders;
+    final authProvider = ref.watch(authProviderProvider);
+    final currentUserId = authProvider.currentAppUser?.id;
 
+    if (currentUserId == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.login, size: 64, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            Text(
+              'Please login to view orders',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final sellerOrders = _marketplaceService.orders
+        .where((o) => o.sellerId == currentUserId)
+        .toList();
+    final buyerOrders = _marketplaceService.orders
+        .where((o) => o.buyerId == currentUserId)
+        .toList();
+
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: TabBar(
+              indicator: BoxDecoration(
+                color: const Color.fromARGB(255, 22, 62, 98),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.grey.shade700,
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              tabs: [
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.sell, size: 18),
+                      const SizedBox(width: 8),
+                      Text('Selling (${sellerOrders.length})'),
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.shopping_bag, size: 18),
+                      const SizedBox(width: 8),
+                      Text('Purchases (${buyerOrders.length})'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _buildOrdersList(sellerOrders, l10n, isSeller: true),
+                _buildOrdersList(buyerOrders, l10n, isSeller: false),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrdersList(List<Order> orders, AppLocalizations l10n, {required bool isSeller}) {
     if (orders.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey.shade400),
+            Icon(
+              isSeller ? Icons.store_outlined : Icons.shopping_cart_outlined,
+              size: 64,
+              color: Colors.grey.shade400,
+            ),
             const SizedBox(height: 16),
             Text(
-              l10n.noOrdersYet,
+              isSeller ? 'No orders for your listings yet' : 'No purchases yet',
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey.shade600,
@@ -543,8 +704,11 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.ordersWillAppearHere,
+              isSeller
+                  ? 'When someone orders your fish, it will appear here'
+                  : 'Your purchases will appear here',
               style: TextStyle(color: Colors.grey.shade500),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -552,15 +716,15 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: orders.length,
       itemBuilder: (context, index) {
-        return _buildOrderCard(orders[index], l10n);
+        return _buildOrderCard(orders[index], l10n, isSeller: isSeller);
       },
     );
   }
 
-  Widget _buildOrderCard(Order order, AppLocalizations l10n) {
+  Widget _buildOrderCard(Order order, AppLocalizations l10n, {required bool isSeller}) {
     Color statusColor;
     IconData statusIcon;
 
@@ -587,6 +751,10 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
         break;
     }
 
+    final listing = _marketplaceService.getListingById(order.listingId);
+    final listingName = listing?.displayName ?? 'Unknown Fish';
+    final totalPrice = listing?.totalPrice ?? 0.0;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -600,7 +768,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
               children: [
                 Expanded(
                   child: Text(
-                    order.listing.displayName,
+                    listingName,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -632,21 +800,50 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(Icons.person, size: 16, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
-                Text('${l10n.buyer}: ${order.buyer.name}'),
+            // Show buyer info for sellers, seller info for buyers
+            if (isSeller) ...[
+              Row(
+                children: [
+                  Icon(Icons.person, size: 16, color: Colors.grey.shade600),
+                  const SizedBox(width: 4),
+                  Text('${l10n.buyer}: ${order.buyerName}'),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.phone, size: 16, color: Colors.grey.shade600),
+                  const SizedBox(width: 4),
+                  Text(order.buyerPhone),
+                ],
+              ),
+              if (order.buyerLocation != null) ...[
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.location_on, size: 16, color: Colors.grey.shade600),
+                    const SizedBox(width: 4),
+                    Expanded(child: Text(order.buyerLocation!)),
+                  ],
+                ),
               ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(Icons.phone, size: 16, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
-                Text(order.buyer.phone),
-              ],
-            ),
+            ] else ...[
+              Row(
+                children: [
+                  Icon(Icons.store, size: 16, color: Colors.grey.shade600),
+                  const SizedBox(width: 4),
+                  Text('Seller: ${listing?.sellerName ?? 'Unknown'}'),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.phone, size: 16, color: Colors.grey.shade600),
+                  const SizedBox(width: 4),
+                  Text(listing?.sellerPhone ?? 'N/A'),
+                ],
+              ),
+            ],
             const SizedBox(height: 4),
             Row(
               children: [
@@ -661,12 +858,14 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
                 Icon(Icons.attach_money, size: 16, color: Colors.grey.shade600),
                 const SizedBox(width: 4),
                 Text(
-                  '${l10n.total}: ${order.totalPrice.toStringAsFixed(2)} BD',
+                  '${l10n.total}: ${totalPrice.toStringAsFixed(2)} BD',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            if (order.paymentMethod == PaymentMethod.benefitPay &&
+            // Show payment proof for sellers only
+            if (isSeller &&
+                order.paymentMethod == PaymentMethod.benefitPay &&
                 order.paymentProofImageUrl != null) ...[
               const SizedBox(height: 12),
               Container(
@@ -718,7 +917,55 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
                 ),
               ),
             ],
-            if (order.status == OrderStatus.pending) ...[
+            // Show rejection reason for buyers if order was rejected
+            if (!isSeller && order.status == OrderStatus.rejected && order.rejectionReason != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: Colors.red.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Reason: ${order.rejectionReason}',
+                        style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            // Show status message for buyers
+            if (!isSeller && order.status == OrderStatus.pending) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.hourglass_empty, size: 16, color: Colors.orange.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Waiting for seller to accept your order',
+                        style: TextStyle(color: Colors.orange.shade700, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            // Show accept/reject buttons for sellers only
+            if (isSeller && order.status == OrderStatus.pending) ...[
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -748,7 +995,8 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
                 ],
               ),
             ],
-            if (order.status == OrderStatus.accepted) ...[
+            // Show complete button for sellers only
+            if (isSeller && order.status == OrderStatus.accepted) ...[
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
@@ -760,6 +1008,29 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
                     backgroundColor: const Color.fromARGB(255, 22, 62, 98),
                     foregroundColor: Colors.white,
                   ),
+                ),
+              ),
+            ],
+            // Show contact seller button for buyers when order is accepted
+            if (!isSeller && order.status == OrderStatus.accepted) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle, size: 16, color: Colors.green.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Order accepted! Contact seller to arrange pickup.',
+                        style: TextStyle(color: Colors.green.shade700, fontSize: 13),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -901,1271 +1172,5 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
         ),
       ),
     );
-  }
-}
-
-class FishDetailsSheet extends StatefulWidget {
-  final FishListing listing;
-  final Function(PaymentMethod, BuyerInfo, String?) onBuy;
-
-  const FishDetailsSheet({
-    super.key,
-    required this.listing,
-    required this.onBuy,
-  });
-
-  @override
-  State<FishDetailsSheet> createState() => _FishDetailsSheetState();
-}
-
-class _FishDetailsSheetState extends State<FishDetailsSheet> {
-  PaymentMethod? _selectedPayment;
-  final _buyerNameController = TextEditingController();
-  final _buyerPhoneController = TextEditingController();
-  final _buyerLocationController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  final _imagePicker = ImagePicker();
-  int _currentImageIndex = 0;
-  String? _paymentProofImage;
-
-  @override
-  void dispose() {
-    _buyerNameController.dispose();
-    _buyerPhoneController.dispose();
-    _buyerLocationController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickPaymentProofImage() async {
-    final image = await _imagePicker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _paymentProofImage = image.path;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.9,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              controller: scrollController,
-              padding: const EdgeInsets.all(20),
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _buildImageGallery(),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.listing.displayName,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          widget.listing.fishType.arabicName,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        widget.listing.condition.displayName,
-                        style: TextStyle(
-                          color: Colors.green.shade700,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                _buildDetailRow(
-                  'Weight',
-                  '${widget.listing.weight.toStringAsFixed(1)} kg',
-                  Icons.scale,
-                ),
-                _buildDetailRow(
-                  'Price per kg',
-                  '${widget.listing.pricePerKg.toStringAsFixed(2)} BD',
-                  Icons.payments,
-                ),
-                _buildDetailRow(
-                  'Total Price',
-                  '${widget.listing.totalPrice.toStringAsFixed(2)} BD',
-                  Icons.receipt_long,
-                  isHighlighted: true,
-                ),
-                if (widget.listing.catchLocation != null)
-                  _buildDetailRow(
-                    'Catch Location',
-                    widget.listing.catchLocation!,
-                    Icons.location_on,
-                  ),
-                if (widget.listing.catchDate != null)
-                  _buildDetailRow(
-                    'Catch Date',
-                    _formatDate(widget.listing.catchDate!),
-                    Icons.calendar_today,
-                  ),
-                const Divider(height: 32),
-                const Text(
-                  'Seller Information',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _buildSellerCard(),
-                const Divider(height: 32),
-                if (widget.listing.description != null) ...[
-                  const Text(
-                    'Description',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.listing.description!,
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-                const Text(
-                  'Your Information',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _buildBuyerForm(),
-                const SizedBox(height: 24),
-                const Text(
-                  'Select Payment Method',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ...widget.listing.acceptedPayments.map((method) {
-                  return _buildPaymentOption(method);
-                }),
-                if (_selectedPayment == PaymentMethod.benefitPay) ...[
-                  const SizedBox(height: 16),
-                  _buildPaymentProofUpload(),
-                ],
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _selectedPayment != null ? _handleBuy : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 22, 62, 98),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      _selectedPayment != null
-                          ? 'Buy Now - ${widget.listing.totalPrice.toStringAsFixed(2)} BD'
-                          : 'Select Payment Method',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: () => _contactSeller(),
-                  icon: const Icon(Icons.phone),
-                  label: const Text('Contact Seller'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildImageGallery() {
-    if (widget.listing.imageUrls.isEmpty) {
-      return Container(
-        height: 200,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color.fromARGB(255, 22, 62, 98),
-              Color.fromARGB(255, 44, 100, 150),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Center(
-          child: Icon(Icons.phishing, size: 80, color: Colors.white),
-        ),
-      );
-    }
-
-    return Column(
-      children: [
-        Container(
-          height: 200,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            image: DecorationImage(
-              image: FileImage(File(widget.listing.imageUrls[_currentImageIndex])),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-        if (widget.listing.imageUrls.length > 1) ...[
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 60,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: widget.listing.imageUrls.length,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () => setState(() => _currentImageIndex = index),
-                  child: Container(
-                    width: 60,
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: _currentImageIndex == index
-                            ? const Color.fromARGB(255, 22, 62, 98)
-                            : Colors.grey.shade300,
-                        width: 2,
-                      ),
-                      image: DecorationImage(
-                        image: FileImage(File(widget.listing.imageUrls[index])),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildBuyerForm() {
-    return Column(
-      children: [
-        TextFormField(
-          controller: _buyerNameController,
-          decoration: InputDecoration(
-            labelText: 'Your Name',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            prefixIcon: const Icon(Icons.person),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your name';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _buyerPhoneController,
-          decoration: InputDecoration(
-            labelText: 'Phone Number',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            prefixIcon: const Icon(Icons.phone),
-          ),
-          keyboardType: TextInputType.phone,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your phone number';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _buyerLocationController,
-          decoration: InputDecoration(
-            labelText: 'Delivery Location (optional)',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            prefixIcon: const Icon(Icons.location_on),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentProofUpload() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.receipt_long, color: Colors.blue.shade700),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Upload Payment Proof',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade700,
-                  ),
-                ),
-              ),
-              Text(
-                '* Required',
-                style: TextStyle(
-                  color: Colors.red.shade400,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Please upload a screenshot of your Benefit Pay payment',
-            style: TextStyle(
-              color: Colors.blue.shade600,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (_paymentProofImage != null) ...[
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.file(
-                    File(_paymentProofImage!),
-                    height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: () => setState(() => _paymentProofImage = null),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.close, size: 16, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.check_circle, size: 16, color: Colors.green.shade600),
-                const SizedBox(width: 4),
-                Text(
-                  'Payment proof uploaded',
-                  style: TextStyle(
-                    color: Colors.green.shade600,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ] else
-            GestureDetector(
-              onTap: _pickPaymentProofImage,
-              child: Container(
-                height: 100,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue.shade300, style: BorderStyle.solid),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_photo_alternate, size: 32, color: Colors.blue.shade400),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tap to upload screenshot',
-                      style: TextStyle(
-                        color: Colors.blue.shade600,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  void _handleBuy() {
-    if (_formKey.currentState!.validate() && _selectedPayment != null) {
-      // Require payment proof for Benefit Pay
-      if (_selectedPayment == PaymentMethod.benefitPay && _paymentProofImage == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please upload your payment proof screenshot'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-        return;
-      }
-
-      final buyerInfo = BuyerInfo(
-        id: 'buyer_${DateTime.now().millisecondsSinceEpoch}',
-        name: _buyerNameController.text,
-        phone: _buyerPhoneController.text,
-        location: _buyerLocationController.text.isEmpty
-            ? null
-            : _buyerLocationController.text,
-      );
-      widget.onBuy(_selectedPayment!, buyerInfo, _paymentProofImage);
-    }
-  }
-
-  Widget _buildDetailRow(String label, String value, IconData icon,
-      {bool isHighlighted = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isHighlighted
-                  ? const Color.fromARGB(255, 22, 62, 98).withValues(alpha: 0.1)
-                  : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: isHighlighted
-                  ? const Color.fromARGB(255, 22, 62, 98)
-                  : Colors.grey.shade600,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(color: Colors.grey.shade600),
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w500,
-              fontSize: isHighlighted ? 18 : 14,
-              color: isHighlighted
-                  ? const Color.fromARGB(255, 22, 62, 98)
-                  : Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSellerCard() {
-    final seller = widget.listing.seller;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: const Color.fromARGB(255, 22, 62, 98),
-                child: Text(
-                  seller.name[0].toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      seller.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    if (seller.location != null)
-                      Text(
-                        seller.location!,
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 13,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.star, size: 16, color: Colors.amber),
-                      const SizedBox(width: 4),
-                      Text(
-                        seller.rating.toStringAsFixed(1),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    '${seller.totalSales} sales',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentOption(PaymentMethod method) {
-    final isSelected = _selectedPayment == method;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedPayment = method),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color.fromARGB(255, 22, 62, 98).withValues(alpha: 0.1)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? const Color.fromARGB(255, 22, 62, 98)
-                : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              method == PaymentMethod.cash
-                  ? Icons.money
-                  : Icons.account_balance_wallet,
-              color: isSelected
-                  ? const Color.fromARGB(255, 22, 62, 98)
-                  : Colors.grey.shade600,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    method.displayName,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: isSelected
-                          ? const Color.fromARGB(255, 22, 62, 98)
-                          : Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    method == PaymentMethod.cash
-                        ? 'Pay with cash on delivery'
-                        : 'Pay instantly via Benefit Pay',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: Color.fromARGB(255, 22, 62, 98),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _contactSeller() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Contact Seller'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Name: ${widget.listing.seller.name}'),
-            const SizedBox(height: 8),
-            Text('Phone: ${widget.listing.seller.phone}'),
-            if (widget.listing.seller.location != null) ...[
-              const SizedBox(height: 8),
-              Text('Location: ${widget.listing.seller.location}'),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inHours < 1) {
-      return '${difference.inMinutes} min ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours} hours ago';
-    } else {
-      return '${difference.inDays} days ago';
-    }
-  }
-}
-
-class SellFishForm extends StatefulWidget {
-  final Function(FishListing) onSubmit;
-
-  const SellFishForm({super.key, required this.onSubmit});
-
-  @override
-  State<SellFishForm> createState() => _SellFishFormState();
-}
-
-class _SellFishFormState extends State<SellFishForm> {
-  final _formKey = GlobalKey<FormState>();
-  final _imagePicker = ImagePicker();
-
-  FishType _selectedFishType = FishType.hamour;
-  FishCondition _selectedCondition = FishCondition.fresh;
-  final Set<PaymentMethod> _acceptedPayments = {PaymentMethod.cash};
-  final List<String> _fishImages = [];
-  String? _benefitPayImage;
-
-  final _weightController = TextEditingController();
-  final _priceController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _catchLocationController = TextEditingController();
-  final _customFishNameController = TextEditingController();
-  final _sellerNameController = TextEditingController();
-  final _sellerPhoneController = TextEditingController();
-  final _sellerLocationController = TextEditingController();
-
-  @override
-  void dispose() {
-    _weightController.dispose();
-    _priceController.dispose();
-    _descriptionController.dispose();
-    _catchLocationController.dispose();
-    _customFishNameController.dispose();
-    _sellerNameController.dispose();
-    _sellerPhoneController.dispose();
-    _sellerLocationController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickFishImages() async {
-    final images = await _imagePicker.pickMultiImage();
-    if (images.isNotEmpty) {
-      setState(() {
-        _fishImages.addAll(images.map((img) => img.path));
-      });
-    }
-  }
-
-  Future<void> _pickBenefitPayImage() async {
-    final image = await _imagePicker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _benefitPayImage = image.path;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionTitle('Fish Photos'),
-          _buildCard([
-            _buildImagePicker(),
-          ]),
-          const SizedBox(height: 24),
-          _buildSectionTitle('Fish Details'),
-          _buildCard([
-            _buildDropdown<FishType>(
-              label: 'Fish Type',
-              value: _selectedFishType,
-              items: FishType.values,
-              onChanged: (value) => setState(() => _selectedFishType = value!),
-              itemBuilder: (type) => '${type.displayName} (${type.arabicName})',
-            ),
-            if (_selectedFishType == FishType.other) ...[
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _customFishNameController,
-                decoration: _inputDecoration('Custom Fish Name'),
-                validator: (value) {
-                  if (_selectedFishType == FishType.other &&
-                      (value == null || value.isEmpty)) {
-                    return 'Please enter the fish name';
-                  }
-                  return null;
-                },
-              ),
-            ],
-            const SizedBox(height: 16),
-            _buildDropdown<FishCondition>(
-              label: 'Condition',
-              value: _selectedCondition,
-              items: FishCondition.values,
-              onChanged: (value) => setState(() => _selectedCondition = value!),
-              itemBuilder: (condition) => condition.displayName,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _weightController,
-                    decoration: _inputDecoration('Weight (kg)'),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Required';
-                      }
-                      if (double.tryParse(value) == null) {
-                        return 'Invalid number';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextFormField(
-                    controller: _priceController,
-                    decoration: _inputDecoration('Price per kg (BD)'),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Required';
-                      }
-                      if (double.tryParse(value) == null) {
-                        return 'Invalid number';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _catchLocationController,
-              decoration: _inputDecoration('Catch Location (optional)'),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: _inputDecoration('Description (optional)'),
-              maxLines: 3,
-            ),
-          ]),
-          const SizedBox(height: 24),
-          _buildSectionTitle('Payment Methods'),
-          _buildCard([
-            const Text(
-              'Select accepted payment methods:',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 12),
-            ...PaymentMethod.values.map((method) {
-              return CheckboxListTile(
-                title: Text(method.displayName),
-                subtitle: Text(
-                  method == PaymentMethod.cash
-                      ? 'Accept cash payment'
-                      : 'Accept Benefit Pay',
-                ),
-                value: _acceptedPayments.contains(method),
-                onChanged: (selected) {
-                  setState(() {
-                    if (selected == true) {
-                      _acceptedPayments.add(method);
-                    } else if (_acceptedPayments.length > 1) {
-                      _acceptedPayments.remove(method);
-                    }
-                  });
-                },
-                controlAffinity: ListTileControlAffinity.leading,
-              );
-            }),
-            if (_acceptedPayments.contains(PaymentMethod.benefitPay)) ...[
-              const Divider(),
-              const SizedBox(height: 8),
-              const Text(
-                'Benefit Pay QR Code / Payment Info',
-                style: TextStyle(fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 8),
-              _buildBenefitPayImagePicker(),
-            ],
-          ]),
-          const SizedBox(height: 24),
-          _buildSectionTitle('Seller Information'),
-          _buildCard([
-            TextFormField(
-              controller: _sellerNameController,
-              decoration: _inputDecoration('Your Name'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your name';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _sellerPhoneController,
-              decoration: _inputDecoration('Phone Number'),
-              keyboardType: TextInputType.phone,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your phone number';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _sellerLocationController,
-              decoration: _inputDecoration('Your Location (optional)'),
-            ),
-          ]),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _submitForm,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 22, 62, 98),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Post Listing',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImagePicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Add photos of your fish (optional)',
-          style: TextStyle(color: Colors.grey),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 100,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              ..._fishImages.asMap().entries.map((entry) {
-                return Stack(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      margin: const EdgeInsets.only(right: 8),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        image: DecorationImage(
-                          image: FileImage(File(entry.value)),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 4,
-                      right: 12,
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _fishImages.removeAt(entry.key);
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            size: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }),
-              GestureDetector(
-                onTap: _pickFishImages,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.add_photo_alternate,
-                          size: 32, color: Colors.grey.shade600),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Add Photo',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBenefitPayImagePicker() {
-    if (_benefitPayImage != null) {
-      return Stack(
-        children: [
-          Container(
-            height: 150,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              image: DecorationImage(
-                image: FileImage(File(_benefitPayImage!)),
-                fit: BoxFit.contain,
-              ),
-              color: Colors.grey.shade100,
-            ),
-          ),
-          Positioned(
-            top: 8,
-            right: 8,
-            child: GestureDetector(
-              onTap: () => setState(() => _benefitPayImage = null),
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.close, size: 16, color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return GestureDetector(
-      onTap: _pickBenefitPayImage,
-      child: Container(
-        height: 100,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.blue.shade50,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.blue.shade200),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.qr_code, size: 32, color: Colors.blue.shade600),
-            const SizedBox(height: 8),
-            Text(
-              'Upload Benefit Pay QR Code',
-              style: TextStyle(
-                color: Colors.blue.shade700,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            Text(
-              'Buyers will see this when they select Benefit Pay',
-              style: TextStyle(
-                color: Colors.blue.shade400,
-                fontSize: 11,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Color.fromARGB(255, 22, 62, 98),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCard(List<Widget> children) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: children,
-      ),
-    );
-  }
-
-  Widget _buildDropdown<T>({
-    required String label,
-    required T value,
-    required List<T> items,
-    required ValueChanged<T?> onChanged,
-    required String Function(T) itemBuilder,
-  }) {
-    return DropdownButtonFormField<T>(
-      value: value,
-      decoration: _inputDecoration(label),
-      items: items.map((item) {
-        return DropdownMenuItem<T>(
-          value: item,
-          child: Text(itemBuilder(item)),
-        );
-      }).toList(),
-      onChanged: onChanged,
-    );
-  }
-
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade300),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(
-          color: Color.fromARGB(255, 22, 62, 98),
-          width: 2,
-        ),
-      ),
-      filled: true,
-      fillColor: Colors.grey.shade50,
-    );
-  }
-
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      final listing = FishListing(
-        id: 'fish_${DateTime.now().millisecondsSinceEpoch}',
-        fishType: _selectedFishType,
-        customFishName: _selectedFishType == FishType.other
-            ? _customFishNameController.text
-            : null,
-        weight: double.parse(_weightController.text),
-        pricePerKg: double.parse(_priceController.text),
-        condition: _selectedCondition,
-        acceptedPayments: _acceptedPayments.toList(),
-        description: _descriptionController.text.isEmpty
-            ? null
-            : _descriptionController.text,
-        imageUrls: _fishImages,
-        benefitPayImageUrl: _benefitPayImage,
-        catchLocation: _catchLocationController.text.isEmpty
-            ? null
-            : _catchLocationController.text,
-        catchDate: DateTime.now(),
-        seller: SellerInfo(
-          id: 'seller_${DateTime.now().millisecondsSinceEpoch}',
-          name: _sellerNameController.text,
-          phone: _sellerPhoneController.text,
-          location: _sellerLocationController.text.isEmpty
-              ? null
-              : _sellerLocationController.text,
-        ),
-        listedAt: DateTime.now(),
-      );
-
-      widget.onSubmit(listing);
-
-      _formKey.currentState!.reset();
-      _weightController.clear();
-      _priceController.clear();
-      _descriptionController.clear();
-      _catchLocationController.clear();
-      _customFishNameController.clear();
-      _sellerNameController.clear();
-      _sellerPhoneController.clear();
-      _sellerLocationController.clear();
-      setState(() {
-        _selectedFishType = FishType.hamour;
-        _selectedCondition = FishCondition.fresh;
-        _acceptedPayments.clear();
-        _acceptedPayments.add(PaymentMethod.cash);
-        _fishImages.clear();
-        _benefitPayImage = null;
-      });
-    }
   }
 }

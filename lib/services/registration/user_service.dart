@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/registration/user.dart';
+import '../../models/registration/user.dart';
 class UserService {
   final _users = FirebaseFirestore.instance.collection('users');
 
