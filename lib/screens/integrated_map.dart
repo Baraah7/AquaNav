@@ -20,6 +20,9 @@ import 'package:Bahaar/widgets/map/layer_control_panel.dart';
 import 'package:Bahaar/widgets/navigation/marina_marker_layer.dart';
 import 'package:Bahaar/widgets/navigation/route_polyline_layer.dart';
 import 'package:Bahaar/widgets/navigation/active_navigation_overlay.dart';
+import 'package:Bahaar/widgets/navigation/weather_alert_overlay.dart';
+import 'package:Bahaar/services/marine_weather_service.dart';
+import 'package:Bahaar/models/weather/marine_weather_model.dart';
 import 'package:Bahaar/utilities/map_constants.dart';
 import 'package:Bahaar/widgets/map/admin_edit_toolbar.dart';
 
@@ -50,7 +53,12 @@ class _IntegratedMapState extends State<IntegratedMap> {
   late final OsrmRoutingService _osrmService;
   late final MarinePathfindingService _marineService;
   late final HybridRouteCoordinator _routeCoordinator;
+  late final MarineWeatherService _weatherService;
   NavigationSessionManager? _navigationManager;
+
+  // Weather state
+  List<WeatherSafetyAssessment> _activeWeatherWarnings = [];
+  bool _weatherAlertDismissed = false;
 
   // State
   bool _mapReady = false;
@@ -124,20 +132,33 @@ class _IntegratedMapState extends State<IntegratedMap> {
         await Future.delayed(const Duration(milliseconds: 100));
       }
 
+      // Initialize weather service
+      _weatherService = MarineWeatherService();
+      await _weatherService.initialize();
+      log('Weather service initialized');
+
+      // Update weather warnings
+      _updateWeatherWarnings();
+
       _osrmService = OsrmRoutingService();
-      _marineService = MarinePathfindingService(_navigationMask);
+      _marineService = MarinePathfindingService(
+        _navigationMask,
+        weatherService: _weatherService,
+      );
       _routeCoordinator = HybridRouteCoordinator(
         osrmService: _osrmService,
         marineService: _marineService,
         marinaService: _marinaService,
         navigationMask: _navigationMask,
         geoJsonBuilder: _geoJsonBuilder!,
+        weatherService: _weatherService,
       );
 
       // Initialize navigation session manager
       _navigationManager = NavigationSessionManager(
         location: _location,
         routeCoordinator: _routeCoordinator,
+        weatherService: _weatherService,
       );
 
       // Listen to navigation state changes
@@ -502,6 +523,9 @@ class _IntegratedMapState extends State<IntegratedMap> {
       log('  Marine segment: ${marineSegment.geometry.length} points, ${marineSegment.distance}m');
       log('  Total distance: ${totalDistance}m');
 
+      // Refresh weather warnings after route calculation
+      _updateWeatherWarnings();
+
       setState(() {
         _currentRoute = combinedRoute;
         _isCalculatingRoute = false;
@@ -577,6 +601,16 @@ class _IntegratedMapState extends State<IntegratedMap> {
         padding: const EdgeInsets.all(50),
       ),
     );
+  }
+
+  void _updateWeatherWarnings() {
+    final warnings = _weatherService.getActiveWarnings();
+    if (mounted) {
+      setState(() {
+        _activeWeatherWarnings = warnings;
+        _weatherAlertDismissed = false;
+      });
+    }
   }
 
   void _showMessage(String message, Color color) {
@@ -1414,6 +1448,17 @@ class _IntegratedMapState extends State<IntegratedMap> {
               ),
             ),
 
+
+          // Weather alert overlay
+          if (_activeWeatherWarnings.isNotEmpty && !_weatherAlertDismissed)
+            WeatherAlertOverlay(
+              warnings: _activeWeatherWarnings,
+              onDismiss: () {
+                setState(() {
+                  _weatherAlertDismissed = true;
+                });
+              },
+            ),
 
           // Route calculation loading indicator
           if (_isCalculatingRoute)

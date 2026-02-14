@@ -5,9 +5,11 @@ import 'package:Bahaar/services/osrm_routing_service.dart';
 import 'package:Bahaar/services/marine_pathfinding_service.dart';
 import 'package:Bahaar/services/marina_data_service.dart';
 import 'package:Bahaar/services/navigation_mask.dart';
+import 'package:Bahaar/services/marine_weather_service.dart';
 import 'package:Bahaar/models/navigation/route_model.dart';
 import 'package:Bahaar/models/navigation/waypoint_model.dart';
 import 'package:Bahaar/models/navigation/marina_model.dart';
+import 'package:Bahaar/models/weather/marine_weather_model.dart';
 import 'package:Bahaar/widgets/map/geojson_layers.dart';
 
 /// Service for orchestrating hybrid land-marine-land routing with marina handoffs
@@ -17,6 +19,7 @@ class HybridRouteCoordinator {
   final MarinaDataService _marinaService;
   final NavigationMask _navigationMask;
   final GeoJsonLayerBuilder _geoJsonBuilder;
+  final MarineWeatherService? _weatherService;
 
   HybridRouteCoordinator({
     required OsrmRoutingService osrmService,
@@ -24,11 +27,13 @@ class HybridRouteCoordinator {
     required MarinaDataService marinaService,
     required NavigationMask navigationMask,
     required GeoJsonLayerBuilder geoJsonBuilder,
+    MarineWeatherService? weatherService,
   })  : _osrmService = osrmService,
         _marineService = marineService,
         _marinaService = marinaService,
         _navigationMask = navigationMask,
-        _geoJsonBuilder = geoJsonBuilder;
+        _geoJsonBuilder = geoJsonBuilder,
+        _weatherService = weatherService;
 
   /// Calculate optimal route between origin and destination
   ///
@@ -445,6 +450,24 @@ class HybridRouteCoordinator {
     // Check for restricted area crossings
     if (!route.validation.isValid) {
       log('Warning: Route crosses ${route.validation.landPoints} restricted points');
+    }
+
+    // Attach weather safety information if available
+    if (_weatherService != null && _weatherService!.hasData) {
+      final overallLevel = _weatherService!.getOverallSafetyLevel();
+      final warnings = _weatherService!.getActiveWarnings();
+      final warningMessages = warnings.expand((w) => w.warnings).toList();
+
+      if (overallLevel != SafetyLevel.safe) {
+        log('Weather safety: ${overallLevel.displayName} - ${warningMessages.join(", ")}');
+      }
+
+      return route.copyWith(
+        metrics: route.metrics.copyWith(
+          weatherSafetyLevel: overallLevel,
+          weatherWarnings: warningMessages.isNotEmpty ? warningMessages : null,
+        ),
+      );
     }
 
     return route;

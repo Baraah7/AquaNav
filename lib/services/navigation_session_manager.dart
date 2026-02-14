@@ -8,6 +8,7 @@ import 'package:Bahaar/models/navigation/route_model.dart';
 import 'package:Bahaar/models/navigation/navigation_session_model.dart';
 import 'package:Bahaar/models/navigation/waypoint_model.dart';
 import 'package:Bahaar/services/hybrid_route_coordinator.dart';
+import 'package:Bahaar/services/marine_weather_service.dart';
 import 'package:Bahaar/utilities/navigation_constants.dart';
 
 /// Service for managing active navigation sessions with real-time tracking
@@ -19,12 +20,15 @@ import 'package:Bahaar/utilities/navigation_constants.dart';
 /// - Breadcrumb trail tracking
 /// - Progress metrics (distance traveled, time elapsed, ETA)
 /// - Navigation state management
+/// - Periodic weather refresh with recalculation on condition changes
 class NavigationSessionManager extends ChangeNotifier {
   final Location _location;
   final HybridRouteCoordinator _routeCoordinator;
+  final MarineWeatherService? _weatherService;
 
   NavigationSession? _session;
   StreamSubscription<LocationData>? _locationSubscription;
+  Timer? _weatherRefreshTimer;
   DateTime? _sessionStartTime;
   int _recalculationCount = 0;
   bool _isRecalculating = false;
@@ -32,8 +36,10 @@ class NavigationSessionManager extends ChangeNotifier {
   NavigationSessionManager({
     required Location location,
     required HybridRouteCoordinator routeCoordinator,
+    MarineWeatherService? weatherService,
   })  : _location = location,
-        _routeCoordinator = routeCoordinator;
+        _routeCoordinator = routeCoordinator,
+        _weatherService = weatherService;
 
   // ============================================================
   // Getters
@@ -98,6 +104,14 @@ class NavigationSessionManager extends ChangeNotifier {
         },
       );
 
+      // Start periodic weather refresh during navigation
+      if (_weatherService != null) {
+        _weatherRefreshTimer = Timer.periodic(
+          Duration(seconds: NavigationConstants.weatherRefreshIntervalSeconds),
+          (_) => _handleWeatherRefresh(),
+        );
+      }
+
       notifyListeners();
       log('Navigation session started successfully');
     } catch (e) {
@@ -154,7 +168,28 @@ class NavigationSessionManager extends ChangeNotifier {
   void _cleanupSession() {
     _locationSubscription?.cancel();
     _locationSubscription = null;
+    _weatherRefreshTimer?.cancel();
+    _weatherRefreshTimer = null;
     _sessionStartTime = null;
+  }
+
+  /// Handle periodic weather refresh during active navigation
+  Future<void> _handleWeatherRefresh() async {
+    if (_session == null || _session!.state != NavigationState.active) return;
+    if (_weatherService == null) return;
+
+    log('Refreshing weather during navigation');
+
+    try {
+      await _weatherService!.refreshWeather();
+
+      if (_weatherService!.hasConditionsChanged()) {
+        log('Weather conditions changed, recalculating route');
+        _handleOffRoute();
+      }
+    } catch (e) {
+      log('Error refreshing weather: $e');
+    }
   }
 
   // ============================================================

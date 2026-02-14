@@ -4,12 +4,15 @@ import 'package:collection/collection.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:Bahaar/services/navigation_mask.dart';
+import 'package:Bahaar/services/marine_weather_service.dart';
 import 'package:Bahaar/models/navigation/route_model.dart';
+import 'package:Bahaar/models/weather/marine_weather_model.dart';
 import 'package:Bahaar/utilities/navigation_constants.dart';
 
 /// Service for marine pathfinding using A* algorithm on water grid
 class MarinePathfindingService {
   final NavigationMask _navigationMask;
+  final MarineWeatherService? _weatherService;
   late int _gridWidth;
   late int _gridHeight;
   late double _resolution;
@@ -18,7 +21,8 @@ class MarinePathfindingService {
   late double _maxLon;
   late double _maxLat;
 
-  MarinePathfindingService(this._navigationMask) {
+  MarinePathfindingService(this._navigationMask, {MarineWeatherService? weatherService})
+      : _weatherService = weatherService {
     _initializeGridParameters();
   }
 
@@ -174,6 +178,9 @@ class MarinePathfindingService {
         // HARD BLOCK: Skip cells in restricted areas (no penalty, absolute block)
         if (_isInRestrictedArea(neighbor, restrictedAreas)) continue;
 
+        // HARD BLOCK: Skip cells with blocked weather conditions
+        if (_isWeatherBlocked(neighbor)) continue;
+
         // Calculate movement cost
         final moveCost = _getMoveCost(current.cell, neighbor);
         final tentativeGScore = gScores[current.cell]! + moveCost;
@@ -209,9 +216,38 @@ class MarinePathfindingService {
   double _getMoveCost(GridCell from, GridCell to) {
     // Diagonal moves cost more (sqrt(2) ≈ 1.414)
     final isDiagonal = (from.col != to.col) && (from.row != to.row);
-    return isDiagonal
-        ? NavigationConstants.aStarDiagonalCost
-        : 1.0;
+    double baseCost = isDiagonal ? NavigationConstants.aStarDiagonalCost : 1.0;
+
+    // Apply weather-based cost multiplier
+    if (_weatherService != null && _weatherService!.hasData) {
+      final assessment = _weatherService!.getAssessmentForCell(
+        to.row, to.col,
+        minLat: _minLat,
+        minLon: _minLon,
+        resolution: _resolution,
+        gridHeight: _gridHeight,
+      );
+      if (assessment != null && assessment.costMultiplier.isFinite) {
+        baseCost *= assessment.costMultiplier;
+      }
+    }
+
+    return baseCost;
+  }
+
+  /// Check if a cell is blocked due to dangerous weather conditions
+  bool _isWeatherBlocked(GridCell cell) {
+    if (_weatherService == null || !_weatherService!.hasData) return false;
+
+    final assessment = _weatherService!.getAssessmentForCell(
+      cell.row, cell.col,
+      minLat: _minLat,
+      minLon: _minLon,
+      resolution: _resolution,
+      gridHeight: _gridHeight,
+    );
+
+    return assessment != null && assessment.level == SafetyLevel.blocked;
   }
 
   /// Check if a cell is inside any restricted area (HARD BLOCK)

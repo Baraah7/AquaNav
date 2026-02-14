@@ -77,6 +77,43 @@ class NavigationConstants {
   static const int aStarTimeoutSeconds = 10;
 
   // ============================================================
+  // Weather & Safety Configuration
+  // ============================================================
+
+  /// Open-Meteo Marine API base URL (free, no API key)
+  static const String openMeteoMarineBaseUrl = 'https://marine-api.open-meteo.com/v1/marine';
+
+  /// Open-Meteo Forecast API base URL (for wind/visibility)
+  static const String openMeteoForecastBaseUrl = 'https://api.open-meteo.com/v1/forecast';
+
+  /// Interval for refreshing marine weather data (seconds)
+  static const int weatherRefreshIntervalSeconds = 900; // 15 minutes
+
+  /// Coarse weather grid resolution (degrees per sample point)
+  static const double weatherGridResolution = 0.2;
+
+  /// Wave height thresholds (meters)
+  static const double waveHeightCaution = 1.0;
+  static const double waveHeightDangerous = 2.0;
+  static const double waveHeightBlocked = 3.0;
+
+  /// Wind speed thresholds (km/h)
+  static const double windSpeedCautionKph = 30.0;
+  static const double windSpeedDangerousKph = 45.0;
+  static const double windSpeedBlockedKph = 60.0;
+
+  /// Visibility thresholds (meters)
+  static const double visibilityCautionMeters = 5000.0;
+  static const double visibilityDangerousMeters = 2000.0;
+  static const double visibilityBlockedMeters = 500.0;
+
+  /// A* cost multiplier for caution-level weather
+  static const double weatherCautionMultiplier = 2.0;
+
+  /// A* cost multiplier for dangerous-level weather
+  static const double weatherDangerousMultiplier = 5.0;
+
+  // ============================================================
   // Route Preferences
   // ============================================================
 
