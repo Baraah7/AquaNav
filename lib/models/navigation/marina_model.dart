@@ -1,16 +1,22 @@
 import 'package:latlong2/latlong.dart';
 
-/// Represents a marina, harbor, slipway, or boat launch point
+// Represents a marina, harbor, slipway, or boat launch point
+// Used for mapping, navigation, and fishing access locations
 class Marina {
   final String id;
   final String name;
+  // Geographic location (latitude & longitude)
   final LatLng location;
   final MarinaType type;
+  // Access type (public, private, etc.)
   final MarinaAccessType accessType;
   final double? depth;
   final List<String> facilities;
+  // OpenStreetMap ID
   final String? osmId;
+  // Indicates whether the marina data has been validated internally
   final bool isValidated;
+  // Additional metadata from OpenStreetMap or GeoJSON
   final Map<String, dynamic>? metadata;
 
   const Marina({
@@ -26,7 +32,8 @@ class Marina {
     this.metadata,
   });
 
-  /// Create Marina from GeoJSON feature
+  // Create Marina from GeoJSON feature
+  // Expected format: Feature with geometry + properties
   factory Marina.fromJson(Map<String, dynamic> json) {
     final properties = json['properties'] as Map<String, dynamic>;
     final geometry = json['geometry'] as Map<String, dynamic>;
@@ -46,7 +53,7 @@ class Marina {
     );
   }
 
-  /// Create Marina from OpenStreetMap node data
+  // Create Marina from OpenStreetMap node data - Useful when importing directly from OSM APIs
   factory Marina.fromOsmNode(Map<String, dynamic> osmData) {
     final tags = osmData['tags'] as Map<String, dynamic>;
     final lat = osmData['lat'] as double;
@@ -66,8 +73,8 @@ class Marina {
     );
   }
 
-  /// Convert Marina to GeoJSON feature
-  Map<String, dynamic> toJson() {
+// Converts Marina to a GeoJSON feature - Useful for map rendering and data export  
+Map<String, dynamic> toJson() {
     return {
       'type': 'Feature',
       'id': id,
@@ -88,7 +95,7 @@ class Marina {
     };
   }
 
-  /// Parse marina type from string
+  // Parse marina type from string
   static MarinaType _parseMarinaType(String typeString) {
     switch (typeString.toLowerCase()) {
       case 'marina':
@@ -108,7 +115,7 @@ class Marina {
     }
   }
 
-  /// Parse marina type from OSM tags
+  // Determines marina type using OpenStreetMap tags
   static MarinaType _parseMarinaTypeFromOsmTags(Map<String, dynamic> tags) {
     if (tags['leisure'] == 'marina') return MarinaType.marina;
     if (tags['leisure'] == 'slipway') return MarinaType.slipway;
@@ -118,7 +125,7 @@ class Marina {
     return MarinaType.marina;
   }
 
-  /// Parse access type from string
+  // Parses access type from OSM or GeoJSON values
   static MarinaAccessType _parseAccessType(String? accessString) {
     if (accessString == null) return MarinaAccessType.public;
 
@@ -138,12 +145,12 @@ class Marina {
     }
   }
 
-  /// Parse depth from OSM tags
+  // Parse depth from OSM tags
   static double? _parseDepth(Map<String, dynamic> tags) {
     final depthStr = tags['depth'] as String?;
     if (depthStr == null) return null;
 
-    // Try to parse depth (e.g., "3.5", "3.5 m")
+    // Supports formats like "3.5", "3.5 m"
     final match = RegExp(r'(\d+\.?\d*)').firstMatch(depthStr);
     if (match != null) {
       return double.tryParse(match.group(1)!);
@@ -152,7 +159,7 @@ class Marina {
     return null;
   }
 
-  /// Parse facilities from OSM tags
+  // Extracts known facilities from OSM tags
   static List<String> _parseFacilities(Map<String, dynamic> tags) {
     final facilities = <String>[];
 
@@ -180,6 +187,7 @@ class Marina {
     return 'Marina(id: $id, name: $name, type: ${type.displayName}, location: $location)';
   }
 
+  // Equality based on marina ID
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -190,28 +198,32 @@ class Marina {
   int get hashCode => id.hashCode;
 }
 
-/// Types of marina/launch facilities
+// Types of marina/launch facilities
 enum MarinaType {
   marina('marina', 'Marina'),
   harbor('harbor', 'Harbor'),
   slipway('slipway', 'Slipway'),
   boatRamp('boat_ramp', 'Boat Ramp'),
   port('port', 'Port');
-
+  
+  // Raw value used in JSON / OSM
   final String value;
+  // Human-readable name for UI
   final String displayName;
 
   const MarinaType(this.value, this.displayName);
 }
 
-/// Access types for marinas
+// Access types for marinas
 enum MarinaAccessType {
   public('public', 'Public'),
   private('private', 'Private'),
   customers('customers', 'Customers Only'),
   permissive('permissive', 'Permissive');
 
+  // Raw value used in JSON / OSM
   final String value;
+  // Human-readable name for UI
   final String displayName;
 
   const MarinaAccessType(this.value, this.displayName);

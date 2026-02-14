@@ -1,20 +1,25 @@
+// Used for geographic coordinates (latitude & longitude)
 import 'package:latlong2/latlong.dart';
 import 'package:Bahaar/models/navigation/route_model.dart';
 import 'package:Bahaar/models/navigation/waypoint_model.dart';
 
-/// Active navigation session tracking user progress along a route
+// Active navigation session tracking user progress along a route
+// It stores the route, current location, progress, metrics, and state.
 class NavigationSession {
   final String id;
   final NavigationRoute route;
   final NavigationState state;
   final LatLng? currentLocation;
+  // Direction user is currently heading (in degrees)
   final double? currentBearing;
   final double? currentSpeed;
   final int currentSegmentIndex;
   final int currentWaypointIndex;
   final DateTime startTime;
   final DateTime? endTime;
+  // List of previous GPS points visited
   final List<LatLng> breadcrumbs;
+  // Metrics that track performance & progress
   final NavigationMetrics metrics;
 
   const NavigationSession({
@@ -32,13 +37,13 @@ class NavigationSession {
     required this.metrics,
   });
 
-  /// Get distance remaining to destination (meters)
+  // Get distance remaining to destination (meters)
   double get distanceRemaining {
     if (currentLocation == null) return route.totalDistance;
     return route.totalDistance - metrics.distanceTraveled;
   }
 
-  /// Get estimated time remaining (seconds)
+  // Get estimated time remaining (seconds)
   int get timeRemaining {
     if (route.estimatedDuration == 0) return 0;
     final elapsed = metrics.elapsedTime;
@@ -46,20 +51,21 @@ class NavigationSession {
     return (estimated - elapsed).clamp(0, estimated);
   }
 
-  /// Get the next waypoint to reach
+  // Get the next waypoint to reach
   Waypoint? get nextWaypoint {
     if (currentWaypointIndex >= route.waypoints.length - 1) return null;
     return route.waypoints[currentWaypointIndex + 1];
   }
 
-  /// Check if user is off route
+  // Check if user is off route
   bool get isOffRoute {
     // Implementation would check if current location is far from route geometry
     // This is a placeholder - actual implementation in NavigationSessionManager
     return false;
   }
 
-  /// Check if nearing a marina transition
+  // Check if nearing a marina transition
+  // Used for special behavior (like speed adjustment or warnings)
   bool get isNearingTransition {
     final next = nextWaypoint;
     if (next == null) return false;
@@ -67,19 +73,19 @@ class NavigationSession {
         next.type == WaypointType.marinaExit;
   }
 
-  /// Get current route segment
+  // Get current route segment
   RouteSegment? get currentSegment {
     if (currentSegmentIndex >= route.segments.length) return null;
     return route.segments[currentSegmentIndex];
   }
 
-  /// Calculate progress percentage
+  // Calculate progress percentage
   double get progressPercentage {
     if (route.totalDistance == 0) return 0;
     return (metrics.distanceTraveled / route.totalDistance * 100).clamp(0, 100);
   }
 
-  /// Create a copy with modified fields
+  // Create a copy with modified fields
   NavigationSession copyWith({
     String? id,
     NavigationRoute? route,
@@ -116,7 +122,7 @@ class NavigationSession {
   }
 }
 
-/// Navigation session state
+// Navigation session state - Represents the lifecycle of a navigation session
 enum NavigationState {
   planning('Planning', 'Route preview'),
   ready('Ready', 'Ready to start'),
@@ -132,7 +138,7 @@ enum NavigationState {
   const NavigationState(this.displayName, this.description);
 }
 
-/// Metrics for tracking navigation progress
+// Metrics for tracking navigation progress
 class NavigationMetrics {
   final double distanceTraveled;
   final int elapsedTime;
@@ -148,7 +154,7 @@ class NavigationMetrics {
     required this.maxSpeed,
   });
 
-  /// Create NavigationMetrics from JSON
+  // Create NavigationMetrics from JSON - used when loading from API/database
   factory NavigationMetrics.fromJson(Map<String, dynamic> json) {
     return NavigationMetrics(
       distanceTraveled: json['distance_traveled'] as double,
@@ -159,7 +165,7 @@ class NavigationMetrics {
     );
   }
 
-  /// Convert NavigationMetrics to JSON
+  // Convert NavigationMetrics to JSON - used when saving
   Map<String, dynamic> toJson() {
     return {
       'distance_traveled': distanceTraveled,
@@ -170,7 +176,7 @@ class NavigationMetrics {
     };
   }
 
-  /// Create a copy with modified fields
+  // Create a copy with modified fields
   NavigationMetrics copyWith({
     double? distanceTraveled,
     int? elapsedTime,

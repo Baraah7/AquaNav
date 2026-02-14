@@ -1,5 +1,8 @@
+import 'package:Bahaar/models/marketplace/buyer_information.dart';
+import 'package:Bahaar/models/marketplace/fish_listing.dart';
+import 'package:Bahaar/models/marketplace/seller_information.dart';
 import 'package:flutter/foundation.dart';
-import '../models/marketplace/fish_listing_model.dart';
+import '../models/marketplace/listing_model.dart';
 import '../models/marketplace/order_model.dart';
 
 class FishMarketplaceService extends ChangeNotifier {

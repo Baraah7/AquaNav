@@ -1,7 +1,10 @@
 import 'dart:io';
+import 'package:Bahaar/models/marketplace/buyer_information.dart';
+import 'package:Bahaar/models/marketplace/seller_information.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../models/marketplace/fish_listing_model.dart';
+import '../models/marketplace/listing_model.dart';
+import '../models/marketplace/fish_listing.dart';
 import '../models/marketplace/order_model.dart';
 import '../services/fish_marketplace_service.dart';
 import '../l10n/app_localizations.dart';
@@ -429,10 +432,7 @@ class _MarinerHarvestPageState extends State<MarinerHarvestPage>
       case FishType.shrimp:
         return Icons.set_meal;
       case FishType.crab:
-      case FishType.lobster:
         return Icons.pest_control;
-      case FishType.squid:
-        return Icons.water;
       default:
         return Icons.phishing;
     }

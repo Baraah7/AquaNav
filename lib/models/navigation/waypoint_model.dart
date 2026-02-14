@@ -1,12 +1,13 @@
 import 'package:latlong2/latlong.dart';
 
-/// Represents a navigation waypoint along a route
+// Represents a navigation waypoint along a route
 class Waypoint {
   final String id;
   final LatLng location;
   final WaypointType type;
   final double distanceFromStart;
   final double? bearing;
+  // Instruction Example: "Turn left", "Launch boat at marina"
   final String? instruction;
   final int? estimatedTime;
   final RouteSegmentType segmentType;
@@ -22,7 +23,7 @@ class Waypoint {
     required this.segmentType,
   });
 
-  /// Create Waypoint from JSON
+  // Create Waypoint from JSON - used when receiving data from API
   factory Waypoint.fromJson(Map<String, dynamic> json) {
     return Waypoint(
       id: json['id'] as String,
@@ -39,7 +40,7 @@ class Waypoint {
     );
   }
 
-  /// Convert Waypoint to JSON
+  // Convert Waypoint to JSON - used for saving or sending to backend
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -56,7 +57,7 @@ class Waypoint {
     };
   }
 
-  /// Create a copy with modified fields
+  // Create a copy with modified fields
   Waypoint copyWith({
     String? id,
     LatLng? location,
@@ -79,11 +80,13 @@ class Waypoint {
     );
   }
 
+  // Used for debugging 
   @override
   String toString() {
     return 'Waypoint(id: $id, type: ${type.displayName}, instruction: $instruction)';
   }
-
+  
+  // Equality override - two waypoints are considered equal if they share same ID
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -94,7 +97,7 @@ class Waypoint {
   int get hashCode => id.hashCode;
 }
 
-/// Types of waypoints in a navigation route
+// Types of waypoints in a navigation route
 enum WaypointType {
   start('Start', 'Begin navigation'),
   end('End', 'Destination reached'),
@@ -109,7 +112,7 @@ enum WaypointType {
   const WaypointType(this.displayName, this.defaultInstruction);
 }
 
-/// Types of route segments
+// Types of route segments
 enum RouteSegmentType {
   land('Land', 'Driving or walking'),
   marine('Marine', 'Boating'),

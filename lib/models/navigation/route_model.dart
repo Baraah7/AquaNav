@@ -3,11 +3,14 @@ import 'package:Bahaar/models/navigation/waypoint_model.dart';
 import 'package:Bahaar/models/navigation/marina_model.dart';
 import 'package:Bahaar/services/navigation_mask.dart';
 
-/// Complete navigation route with segments, waypoints, and validation
+// Complete navigation route with segments, waypoints, and validation
 class NavigationRoute {
   final String id;
+  // Starting coordinate
   final LatLng origin;
+  // Ending coordinate
   final LatLng destination;
+  // List of route segments (land or marine parts)
   final List<RouteSegment> segments;
   final List<LatLng> geometry;
   final List<Waypoint> waypoints;
@@ -31,15 +34,15 @@ class NavigationRoute {
     required this.metrics,
   });
 
-  /// Check if this is a hybrid route (contains both land and marine segments)
+  // Check if this is a hybrid route (contains both land and marine segments)
   bool get isHybrid =>
       segments.any((s) => s.type == SegmentType.marine) &&
       segments.any((s) => s.type == SegmentType.land);
 
-  /// Check if route crosses restricted areas
+  // Check if route crosses restricted areas
   bool get crossesRestrictedAreas => !validation.isValid;
 
-  /// Get the current segment based on user location
+  // Get the current segment based on user location (distance traveled)
   RouteSegment? currentSegment(LatLng userLocation, double distanceTraveled) {
     double accumulated = 0;
     for (final segment in segments) {
@@ -51,13 +54,13 @@ class NavigationRoute {
     return segments.isNotEmpty ? segments.last : null;
   }
 
-  /// Calculate progress percentage
+  // Calculate progress percentage
   double progressPercentage(double distanceTraveled) {
     if (totalDistance == 0) return 0;
     return (distanceTraveled / totalDistance * 100).clamp(0, 100);
   }
 
-  /// Create a copy with modified fields
+  // Create a copy with modified fields
   NavigationRoute copyWith({
     String? id,
     LatLng? origin,
@@ -92,7 +95,7 @@ class NavigationRoute {
   }
 }
 
-/// Segment of a route (land or marine section)
+// Segment of a route (land or marine section)
 class RouteSegment {
   final SegmentType type;
   final List<LatLng> geometry;
@@ -112,8 +115,9 @@ class RouteSegment {
     this.exitMarina,
   });
 
-  /// Create RouteSegment from JSON
+  // Create RouteSegment from JSON - API response
   factory RouteSegment.fromJson(Map<String, dynamic> json) {
+    // Convert geometry JSON list to LatLng objects
     final geometryList = json['geometry'] as List;
     final geometry = geometryList
         .map((coord) => LatLng(coord['lat'] as double, coord['lon'] as double))
@@ -134,7 +138,7 @@ class RouteSegment {
     );
   }
 
-  /// Convert RouteSegment to JSON
+  // Convert RouteSegment to JSON - for saving or sending
   Map<String, dynamic> toJson() {
     return {
       'type': type.name,
@@ -155,7 +159,7 @@ class RouteSegment {
   }
 }
 
-/// Type of route segment
+// Type of route segment
 enum SegmentType {
   land('Land'),
   marine('Marine');
@@ -165,7 +169,7 @@ enum SegmentType {
   const SegmentType(this.displayName);
 }
 
-/// Metrics for a navigation route
+// Metrics for a navigation route
 class RouteMetrics {
   final double landDistance;
   final double marineDistance;
@@ -183,21 +187,21 @@ class RouteMetrics {
     this.averageDepth,
   });
 
-  /// Total distance (land + marine)
+  // Total distance (land + marine)
   double get totalDistance => landDistance + marineDistance;
 
-  /// Total duration (land + marine)
+  // Total duration (land + marine)
   int get totalDuration => landDuration + marineDuration;
 
-  /// Percentage of route on land
+  // Percentage of route on land
   double get landPercentage =>
       totalDistance > 0 ? (landDistance / totalDistance * 100) : 0;
 
-  /// Percentage of route on marine
+  // Percentage of route on marine
   double get marinePercentage =>
       totalDistance > 0 ? (marineDistance / totalDistance * 100) : 0;
 
-  /// Create RouteMetrics from JSON
+  // Create RouteMetrics from JSON
   factory RouteMetrics.fromJson(Map<String, dynamic> json) {
     return RouteMetrics(
       landDistance: json['land_distance'] as double,
@@ -210,7 +214,7 @@ class RouteMetrics {
     );
   }
 
-  /// Convert RouteMetrics to JSON
+  // Convert RouteMetrics to JSON
   Map<String, dynamic> toJson() {
     return {
       'land_distance': landDistance,
@@ -222,7 +226,7 @@ class RouteMetrics {
     };
   }
 
-  /// Create a copy with modified fields
+  // Create a copy with modified fields
   RouteMetrics copyWith({
     double? landDistance,
     double? marineDistance,

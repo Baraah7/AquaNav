@@ -1,5 +1,8 @@
-import 'fish_listing_model.dart';
+import 'listing_model.dart';
+import 'fish_listing.dart';
+import 'buyer_information.dart';
 
+// Represents the lifecycle status of an order
 enum OrderStatus {
   pending,
   accepted,
@@ -23,38 +26,7 @@ enum OrderStatus {
   }
 }
 
-class BuyerInfo {
-  final String id;
-  final String name;
-  final String phone;
-  final String? location;
-
-  BuyerInfo({
-    required this.id,
-    required this.name,
-    required this.phone,
-    this.location,
-  });
-
-  factory BuyerInfo.fromJson(Map<String, dynamic> json) {
-    return BuyerInfo(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      phone: json['phone'] as String,
-      location: json['location'] as String?,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'phone': phone,
-      'location': location,
-    };
-  }
-}
-
+// Represents a purchase order made by a buyer for a fish listing
 class Order {
   final String id;
   final FishListing listing;
@@ -82,6 +54,7 @@ class Order {
 
   double get totalPrice => listing.totalPrice;
 
+  // Creates a new Order with modified fields
   Order copyWith({
     String? id,
     FishListing? listing,
@@ -108,6 +81,7 @@ class Order {
     );
   }
 
+  // Creates an Order object from backend JSON data
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
       id: json['id'] as String,
@@ -131,6 +105,7 @@ class Order {
     );
   }
 
+  // Converts the Order object to JSON for API or database storage
   Map<String, dynamic> toJson() {
     return {
       'id': id,

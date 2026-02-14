@@ -1,173 +1,17 @@
-enum FishType {
-  hamour,
-  shaari,
-  safi,
-  suboor,
-  chanad,
-  kingfish,
-  tuna,
-  shrimp,
-  crab,
-  lobster,
-  squid,
-  other;
 
-  String get displayName {
-    switch (this) {
-      case FishType.hamour:
-        return 'Hamour (Grouper)';
-      case FishType.shaari:
-        return 'Shaari (Emperor)';
-      case FishType.safi:
-        return 'Safi (Rabbitfish)';
-      case FishType.suboor:
-        return 'Suboor (Shad)';
-      case FishType.chanad:
-        return 'Chanad (Mackerel)';
-      case FishType.kingfish:
-        return 'Kingfish';
-      case FishType.tuna:
-        return 'Tuna';
-      case FishType.shrimp:
-        return 'Shrimp';
-      case FishType.crab:
-        return 'Crab';
-      case FishType.lobster:
-        return 'Lobster';
-      case FishType.squid:
-        return 'Squid';
-      case FishType.other:
-        return 'Other';
-    }
-  }
+import 'package:Bahaar/models/marketplace/listing_model.dart';
+import 'package:Bahaar/models/marketplace/seller_information.dart';
 
-  String get arabicName {
-    switch (this) {
-      case FishType.hamour:
-        return 'هامور';
-      case FishType.shaari:
-        return 'شعري';
-      case FishType.safi:
-        return 'صافي';
-      case FishType.suboor:
-        return 'صبور';
-      case FishType.chanad:
-        return 'چناد';
-      case FishType.kingfish:
-        return 'كنعد';
-      case FishType.tuna:
-        return 'تونة';
-      case FishType.shrimp:
-        return 'ربيان';
-      case FishType.crab:
-        return 'قبقب';
-      case FishType.lobster:
-        return 'استاكوزا';
-      case FishType.squid:
-        return 'حبار';
-      case FishType.other:
-        return 'أخرى';
-    }
-  }
-}
-
-enum FishCondition {
-  fresh,
-  frozen,
-  cleaned,
-  filleted;
-
-  String get displayName {
-    switch (this) {
-      case FishCondition.fresh:
-        return 'Fresh';
-      case FishCondition.frozen:
-        return 'Frozen';
-      case FishCondition.cleaned:
-        return 'Cleaned';
-      case FishCondition.filleted:
-        return 'Filleted';
-    }
-  }
-}
-
-enum PaymentMethod {
-  cash,
-  benefitPay;
-
-  String get displayName {
-    switch (this) {
-      case PaymentMethod.cash:
-        return 'Cash';
-      case PaymentMethod.benefitPay:
-        return 'Benefit Pay';
-    }
-  }
-}
-
-enum ListingStatus {
-  available,
-  reserved,
-  sold;
-
-  String get displayName {
-    switch (this) {
-      case ListingStatus.available:
-        return 'Available';
-      case ListingStatus.reserved:
-        return 'Reserved';
-      case ListingStatus.sold:
-        return 'Sold';
-    }
-  }
-}
-
-class SellerInfo {
-  final String id;
-  final String name;
-  final String phone;
-  final String? location;
-  final double rating;
-  final int totalSales;
-
-  SellerInfo({
-    required this.id,
-    required this.name,
-    required this.phone,
-    this.location,
-    this.rating = 0.0,
-    this.totalSales = 0,
-  });
-
-  factory SellerInfo.fromJson(Map<String, dynamic> json) {
-    return SellerInfo(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      phone: json['phone'] as String,
-      location: json['location'] as String?,
-      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      totalSales: json['totalSales'] as int? ?? 0,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'phone': phone,
-      'location': location,
-      'rating': rating,
-      'totalSales': totalSales,
-    };
-  }
-}
-
+// Represents a single fish listing in the marketplace
 class FishListing {
   final String id;
   final FishType fishType;
+  // Custom fish name (used only when fishType == FishType.other)
   final String? customFishName;
+  // In kilograms
   final double weight;
   final double pricePerKg;
+  // Condition of the fish (fresh, frozen, cleaned, filleted)
   final FishCondition condition;
   final List<PaymentMethod> acceptedPayments;
   final String? description;
@@ -197,15 +41,18 @@ class FishListing {
     this.catchDate,
   });
 
+  // Returns the first image to be used as a thumbnail
   String? get primaryImageUrl => imageUrls.isNotEmpty ? imageUrls.first : null;
 
   double get totalPrice => weight * pricePerKg;
 
+  // Name shown in the UI - Uses custom name if fish type is "other"
   String get displayName =>
       fishType == FishType.other && customFishName != null
           ? customFishName!
           : fishType.displayName;
 
+  // Creates a FishListing object from JSON data
   factory FishListing.fromJson(Map<String, dynamic> json) {
     return FishListing(
       id: json['id'] as String,
@@ -244,7 +91,8 @@ class FishListing {
           : null,
     );
   }
-
+  
+  // Converts the FishListing object to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -264,7 +112,8 @@ class FishListing {
       'catchDate': catchDate?.toIso8601String(),
     };
   }
-
+  
+  // Creates a new FishListing with updated values
   FishListing copyWith({
     String? id,
     FishType? fishType,
