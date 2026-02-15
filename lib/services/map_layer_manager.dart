@@ -19,6 +19,12 @@ class MapLayerManager extends ChangeNotifier {
   bool _showFishingZones = true;
   bool _showRestrictedAreas = true;
 
+  // Fishing activity layer
+  bool _showFishingActivity = false;
+  bool _showFishingActivityTracks = true;
+  bool _showFishingActivityEvents = true;
+  bool _showFishingActivityHeatmap = true;
+
   // Navigation mask
   bool _showMaskOverlay = false;
 
@@ -41,6 +47,10 @@ class MapLayerManager extends ChangeNotifier {
   bool get showProtectedZones => _showProtectedZones;
   bool get showFishingZones => _showFishingZones;
   bool get showRestrictedAreas => _showRestrictedAreas;
+  bool get showFishingActivity => _showFishingActivity;
+  bool get showFishingActivityTracks => _showFishingActivityTracks;
+  bool get showFishingActivityEvents => _showFishingActivityEvents;
+  bool get showFishingActivityHeatmap => _showFishingActivityHeatmap;
   bool get showMaskOverlay => _showMaskOverlay;
   bool get showLayerControls => _showLayerControls;
   bool get isAdminEditMode => _isAdminEditMode;
@@ -118,6 +128,34 @@ class MapLayerManager extends ChangeNotifier {
     }
   }
 
+  set showFishingActivity(bool value) {
+    if (_showFishingActivity != value) {
+      _showFishingActivity = value;
+      notifyListeners();
+    }
+  }
+
+  set showFishingActivityTracks(bool value) {
+    if (_showFishingActivityTracks != value) {
+      _showFishingActivityTracks = value;
+      notifyListeners();
+    }
+  }
+
+  set showFishingActivityEvents(bool value) {
+    if (_showFishingActivityEvents != value) {
+      _showFishingActivityEvents = value;
+      notifyListeners();
+    }
+  }
+
+  set showFishingActivityHeatmap(bool value) {
+    if (_showFishingActivityHeatmap != value) {
+      _showFishingActivityHeatmap = value;
+      notifyListeners();
+    }
+  }
+
   set showMaskOverlay(bool value) {
     if (_showMaskOverlay != value) {
       _showMaskOverlay = value;
@@ -176,6 +214,10 @@ class MapLayerManager extends ChangeNotifier {
     _showProtectedZones = true;
     _showFishingZones = true;
     _showRestrictedAreas = true;
+    _showFishingActivity = false;
+    _showFishingActivityTracks = true;
+    _showFishingActivityEvents = true;
+    _showFishingActivityHeatmap = true;
     _showMaskOverlay = false;
     _showLayerControls = false;
     notifyListeners();

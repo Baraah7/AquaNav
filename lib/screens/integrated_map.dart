@@ -16,11 +16,13 @@ import 'package:Bahaar/models/navigation/marina_model.dart';
 import 'package:Bahaar/models/navigation/route_model.dart';
 import 'package:Bahaar/widgets/map/enhanced_depth_layer.dart';
 import 'package:Bahaar/widgets/map/geojson_layers.dart';
+import 'package:Bahaar/widgets/map/fishing_activity_layer.dart';
 import 'package:Bahaar/widgets/map/layer_control_panel.dart';
 import 'package:Bahaar/widgets/navigation/marina_marker_layer.dart';
 import 'package:Bahaar/widgets/navigation/route_polyline_layer.dart';
 import 'package:Bahaar/widgets/navigation/active_navigation_overlay.dart';
 import 'package:Bahaar/widgets/navigation/weather_alert_overlay.dart';
+import 'package:Bahaar/services/fishing_activity_service.dart';
 import 'package:Bahaar/services/marine_weather_service.dart';
 import 'package:Bahaar/models/weather/marine_weather_model.dart';
 import 'package:Bahaar/utilities/map_constants.dart';
@@ -54,6 +56,7 @@ class _IntegratedMapState extends State<IntegratedMap> {
   late final MarinePathfindingService _marineService;
   late final HybridRouteCoordinator _routeCoordinator;
   late final MarineWeatherService _weatherService;
+  late final FishingActivityService _fishingActivityService;
   NavigationSessionManager? _navigationManager;
 
   // Weather state
@@ -67,6 +70,7 @@ class _IntegratedMapState extends State<IntegratedMap> {
   LocationData? _locationData;
   bool _maskInitialized = false;
   bool _showDepthLegend = false;
+  double _currentZoom = MapConstants.defaultZoom;
 
   // Admin edit state - track painted cells with their brush type for visualization
   final Map<({int row, int col}), AdminBrushType> _paintedCells = {};
@@ -118,6 +122,10 @@ class _IntegratedMapState extends State<IntegratedMap> {
   void initState() {
     super.initState();
     _layerManager = MapLayerManager();
+    _fishingActivityService = FishingActivityService();
+    _fishingActivityService.initialize().then((_) {
+      if (mounted) setState(() {});
+    });
     _initLocation();
     _initNavigationMask();
     _loadGeoJson();
@@ -180,6 +188,7 @@ class _IntegratedMapState extends State<IntegratedMap> {
   void dispose() {
     _navigationManager?.removeListener(_onNavigationUpdate);
     _navigationManager?.dispose();
+    _fishingActivityService.dispose();
     _layerManager.dispose();
     super.dispose();
   }
@@ -765,6 +774,11 @@ class _IntegratedMapState extends State<IntegratedMap> {
         initialZoom: MapConstants.defaultZoom,
         onMapReady: _onMapReady,
         onTap: _handleMapTap,
+        onPositionChanged: (position, hasGesture) {
+          if (position.zoom != _currentZoom) {
+            setState(() => _currentZoom = position.zoom);
+          }
+        },
         // Disable map gestures in admin edit mode to allow painting
         interactionOptions: InteractionOptions(
           flags: isAdminMode
@@ -810,6 +824,24 @@ class _IntegratedMapState extends State<IntegratedMap> {
                 showProtectedZones: _layerManager.showProtectedZones,
                 showFishingZones: _layerManager.showFishingZones,
                 showRestrictedAreas: _layerManager.showRestrictedAreas,
+              );
+            },
+          ),
+
+        // Fishing activity layer
+        if (_fishingActivityService.isInitialized)
+          ListenableBuilder(
+            listenable: _layerManager,
+            builder: (context, _) {
+              if (!_layerManager.showFishingActivity) {
+                return const SizedBox.shrink();
+              }
+              return FishingActivityLayer(
+                service: _fishingActivityService,
+                currentZoom: _currentZoom,
+                showTracks: _layerManager.showFishingActivityTracks,
+                showEvents: _layerManager.showFishingActivityEvents,
+                showHeatmap: _layerManager.showFishingActivityHeatmap,
               );
             },
           ),

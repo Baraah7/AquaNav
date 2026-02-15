@@ -50,6 +50,8 @@ class LayerControlPanel extends StatelessWidget {
             const Divider(),
             _buildGeoJsonSection(),
             const Divider(),
+            _buildFishingActivitySection(),
+            const Divider(),
             _buildNavigationMaskSection(),
           ],
         ),
@@ -288,6 +290,88 @@ class LayerControlPanel extends StatelessWidget {
       subtitle: Text(
         '$count feature${count != 1 ? 's' : ''}',
         style: const TextStyle(fontSize: 10),
+      ),
+      value: value,
+      onChanged: onChanged,
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+    );
+  }
+
+  Widget _buildFishingActivitySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Fishing Activity',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        ),
+        const SizedBox(height: 8),
+
+        // Master toggle
+        SwitchListTile(
+          title:
+              const Text('Show Fishing Activity', style: TextStyle(fontSize: 13)),
+          subtitle: Text(
+            layerManager.showFishingActivity
+                ? 'GFW vessel tracks & events'
+                : 'Disabled',
+            style: const TextStyle(fontSize: 10),
+          ),
+          value: layerManager.showFishingActivity,
+          onChanged: (val) => layerManager.showFishingActivity = val,
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+        ),
+
+        if (layerManager.showFishingActivity) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: Column(
+              children: [
+                _buildFishingSubToggle(
+                  'Vessel Tracks',
+                  Icons.route,
+                  Colors.orange,
+                  layerManager.showFishingActivityTracks,
+                  (val) => layerManager.showFishingActivityTracks = val,
+                ),
+                _buildFishingSubToggle(
+                  'Fishing Events',
+                  Icons.phishing,
+                  Colors.deepOrange,
+                  layerManager.showFishingActivityEvents,
+                  (val) => layerManager.showFishingActivityEvents = val,
+                ),
+                _buildFishingSubToggle(
+                  'Intensity Heatmap',
+                  Icons.thermostat,
+                  Colors.red,
+                  layerManager.showFishingActivityHeatmap,
+                  (val) => layerManager.showFishingActivityHeatmap = val,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildFishingSubToggle(
+    String title,
+    IconData icon,
+    Color color,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
+    return SwitchListTile(
+      title: Row(
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(title, style: const TextStyle(fontSize: 12)),
+        ],
       ),
       value: value,
       onChanged: onChanged,

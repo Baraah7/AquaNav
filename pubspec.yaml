@@ -25,6 +25,7 @@ dependencies:
   firebase_auth: ^5.3.0
   firebase_core: ^3.6.0
   cloud_firestore: ^5.4.0
+  flutter_map_marker_cluster: ^8.2.2
 
 dev_dependencies:
   flutter_test:
@@ -45,6 +46,7 @@ flutter:
     - secrets.env
     - assets/data/gulf_test_features.geojson
     - assets/data/marinas.geojson
+    - assets/data/fishing_activity_sample.geojson
     - assets/navigation/
     - assets/models/
     - lib/widgets/map/mask/bahrain_territorial_waters.tif

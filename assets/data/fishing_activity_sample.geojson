@@ -1,0 +1,356 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "source": "Sample data for Bahrain fishing activity visualization",
+    "description": "Simulated fishing vessel tracks and events around Bahrain waters"
+  },
+  "tracks": [
+    {
+      "vessel_id": "v001",
+      "vessel_name": "Al-Safina",
+      "vessel_flag": "BHR",
+      "gear_type": "traditional_trap",
+      "positions": [
+        {"latitude": 26.2100, "longitude": 50.6200, "timestamp": "2025-01-15T05:00:00Z", "speed": 8.5},
+        {"latitude": 26.2050, "longitude": 50.6350, "timestamp": "2025-01-15T05:30:00Z", "speed": 7.2},
+        {"latitude": 26.1950, "longitude": 50.6500, "timestamp": "2025-01-15T06:00:00Z", "speed": 6.0},
+        {"latitude": 26.1800, "longitude": 50.6600, "timestamp": "2025-01-15T06:30:00Z", "speed": 3.1},
+        {"latitude": 26.1700, "longitude": 50.6650, "timestamp": "2025-01-15T07:00:00Z", "speed": 1.5},
+        {"latitude": 26.1680, "longitude": 50.6680, "timestamp": "2025-01-15T08:00:00Z", "speed": 0.8},
+        {"latitude": 26.1720, "longitude": 50.6700, "timestamp": "2025-01-15T09:00:00Z", "speed": 1.2},
+        {"latitude": 26.1750, "longitude": 50.6680, "timestamp": "2025-01-15T10:00:00Z", "speed": 2.0},
+        {"latitude": 26.1800, "longitude": 50.6600, "timestamp": "2025-01-15T11:00:00Z", "speed": 5.5},
+        {"latitude": 26.1950, "longitude": 50.6450, "timestamp": "2025-01-15T11:30:00Z", "speed": 7.0},
+        {"latitude": 26.2100, "longitude": 50.6200, "timestamp": "2025-01-15T12:00:00Z", "speed": 8.0}
+      ],
+      "events": [
+        {
+          "id": "e001",
+          "vessel_id": "v001",
+          "vessel_name": "Al-Safina",
+          "event_type": "fishing",
+          "latitude": 26.1700,
+          "longitude": 50.6650,
+          "start_time": "2025-01-15T07:00:00Z",
+          "end_time": "2025-01-15T10:00:00Z",
+          "duration_hours": 3.0
+        }
+      ]
+    },
+    {
+      "vessel_id": "v002",
+      "vessel_name": "Noora",
+      "vessel_flag": "BHR",
+      "gear_type": "longline",
+      "positions": [
+        {"latitude": 26.2285, "longitude": 50.6050, "timestamp": "2025-01-15T04:00:00Z", "speed": 9.0},
+        {"latitude": 26.2200, "longitude": 50.6200, "timestamp": "2025-01-15T04:30:00Z", "speed": 8.0},
+        {"latitude": 26.2000, "longitude": 50.6500, "timestamp": "2025-01-15T05:00:00Z", "speed": 7.5},
+        {"latitude": 26.1600, "longitude": 50.7000, "timestamp": "2025-01-15T06:00:00Z", "speed": 5.0},
+        {"latitude": 26.1400, "longitude": 50.7200, "timestamp": "2025-01-15T07:00:00Z", "speed": 2.0},
+        {"latitude": 26.1350, "longitude": 50.7250, "timestamp": "2025-01-15T08:00:00Z", "speed": 1.0},
+        {"latitude": 26.1380, "longitude": 50.7300, "timestamp": "2025-01-15T09:00:00Z", "speed": 1.5},
+        {"latitude": 26.1420, "longitude": 50.7280, "timestamp": "2025-01-15T10:00:00Z", "speed": 1.8},
+        {"latitude": 26.1500, "longitude": 50.7200, "timestamp": "2025-01-15T11:00:00Z", "speed": 3.0},
+        {"latitude": 26.1450, "longitude": 50.7100, "timestamp": "2025-01-15T12:00:00Z", "speed": 2.5},
+        {"latitude": 26.1500, "longitude": 50.7000, "timestamp": "2025-01-15T13:00:00Z", "speed": 4.0},
+        {"latitude": 26.1800, "longitude": 50.6700, "timestamp": "2025-01-15T14:00:00Z", "speed": 7.0},
+        {"latitude": 26.2285, "longitude": 50.6050, "timestamp": "2025-01-15T15:00:00Z", "speed": 9.0}
+      ],
+      "events": [
+        {
+          "id": "e002",
+          "vessel_id": "v002",
+          "vessel_name": "Noora",
+          "event_type": "fishing",
+          "latitude": 26.1400,
+          "longitude": 50.7200,
+          "start_time": "2025-01-15T07:00:00Z",
+          "end_time": "2025-01-15T11:00:00Z",
+          "duration_hours": 4.0
+        },
+        {
+          "id": "e003",
+          "vessel_id": "v002",
+          "vessel_name": "Noora",
+          "event_type": "fishing",
+          "latitude": 26.1450,
+          "longitude": 50.7100,
+          "start_time": "2025-01-15T11:30:00Z",
+          "end_time": "2025-01-15T13:00:00Z",
+          "duration_hours": 1.5
+        }
+      ]
+    },
+    {
+      "vessel_id": "v003",
+      "vessel_name": "Al-Jazeera",
+      "vessel_flag": "BHR",
+      "gear_type": "trawler",
+      "positions": [
+        {"latitude": 26.2572, "longitude": 50.6300, "timestamp": "2025-01-15T03:00:00Z", "speed": 10.0},
+        {"latitude": 26.2400, "longitude": 50.6500, "timestamp": "2025-01-15T03:30:00Z", "speed": 9.0},
+        {"latitude": 26.2200, "longitude": 50.6800, "timestamp": "2025-01-15T04:00:00Z", "speed": 8.5},
+        {"latitude": 26.1900, "longitude": 50.7200, "timestamp": "2025-01-15T05:00:00Z", "speed": 6.0},
+        {"latitude": 26.1600, "longitude": 50.7500, "timestamp": "2025-01-15T06:00:00Z", "speed": 3.5},
+        {"latitude": 26.1500, "longitude": 50.7600, "timestamp": "2025-01-15T07:00:00Z", "speed": 2.0},
+        {"latitude": 26.1450, "longitude": 50.7650, "timestamp": "2025-01-15T08:00:00Z", "speed": 1.5},
+        {"latitude": 26.1480, "longitude": 50.7700, "timestamp": "2025-01-15T09:00:00Z", "speed": 2.0},
+        {"latitude": 26.1550, "longitude": 50.7650, "timestamp": "2025-01-15T10:00:00Z", "speed": 2.5},
+        {"latitude": 26.1650, "longitude": 50.7500, "timestamp": "2025-01-15T11:00:00Z", "speed": 4.0},
+        {"latitude": 26.1900, "longitude": 50.7200, "timestamp": "2025-01-15T12:00:00Z", "speed": 7.0},
+        {"latitude": 26.2200, "longitude": 50.6800, "timestamp": "2025-01-15T13:00:00Z", "speed": 8.0},
+        {"latitude": 26.2572, "longitude": 50.6300, "timestamp": "2025-01-15T14:00:00Z", "speed": 9.5}
+      ],
+      "events": [
+        {
+          "id": "e004",
+          "vessel_id": "v003",
+          "vessel_name": "Al-Jazeera",
+          "event_type": "fishing",
+          "latitude": 26.1500,
+          "longitude": 50.7600,
+          "start_time": "2025-01-15T06:30:00Z",
+          "end_time": "2025-01-15T10:30:00Z",
+          "duration_hours": 4.0
+        }
+      ]
+    },
+    {
+      "vessel_id": "v004",
+      "vessel_name": "Pearl Diver",
+      "vessel_flag": "BHR",
+      "gear_type": "traditional_trap",
+      "positions": [
+        {"latitude": 26.2100, "longitude": 50.6200, "timestamp": "2025-01-16T05:00:00Z", "speed": 7.0},
+        {"latitude": 26.1800, "longitude": 50.5800, "timestamp": "2025-01-16T06:00:00Z", "speed": 6.5},
+        {"latitude": 26.1500, "longitude": 50.5500, "timestamp": "2025-01-16T07:00:00Z", "speed": 5.0},
+        {"latitude": 26.1200, "longitude": 50.5300, "timestamp": "2025-01-16T08:00:00Z", "speed": 3.0},
+        {"latitude": 26.1000, "longitude": 50.5200, "timestamp": "2025-01-16T09:00:00Z", "speed": 1.5},
+        {"latitude": 26.0950, "longitude": 50.5150, "timestamp": "2025-01-16T10:00:00Z", "speed": 1.0},
+        {"latitude": 26.0980, "longitude": 50.5180, "timestamp": "2025-01-16T11:00:00Z", "speed": 1.2},
+        {"latitude": 26.1050, "longitude": 50.5250, "timestamp": "2025-01-16T12:00:00Z", "speed": 2.0},
+        {"latitude": 26.1300, "longitude": 50.5500, "timestamp": "2025-01-16T13:00:00Z", "speed": 5.5},
+        {"latitude": 26.1800, "longitude": 50.5800, "timestamp": "2025-01-16T14:00:00Z", "speed": 7.0},
+        {"latitude": 26.2100, "longitude": 50.6200, "timestamp": "2025-01-16T15:00:00Z", "speed": 8.0}
+      ],
+      "events": [
+        {
+          "id": "e005",
+          "vessel_id": "v004",
+          "vessel_name": "Pearl Diver",
+          "event_type": "fishing",
+          "latitude": 26.1000,
+          "longitude": 50.5200,
+          "start_time": "2025-01-16T09:00:00Z",
+          "end_time": "2025-01-16T12:00:00Z",
+          "duration_hours": 3.0
+        }
+      ]
+    },
+    {
+      "vessel_id": "v005",
+      "vessel_name": "Bahrain Star",
+      "vessel_flag": "BHR",
+      "gear_type": "purse_seine",
+      "positions": [
+        {"latitude": 26.2285, "longitude": 50.6050, "timestamp": "2025-01-16T04:00:00Z", "speed": 10.0},
+        {"latitude": 26.1900, "longitude": 50.5600, "timestamp": "2025-01-16T05:00:00Z", "speed": 8.0},
+        {"latitude": 26.1500, "longitude": 50.5200, "timestamp": "2025-01-16T06:00:00Z", "speed": 6.0},
+        {"latitude": 26.1100, "longitude": 50.4900, "timestamp": "2025-01-16T07:00:00Z", "speed": 4.0},
+        {"latitude": 26.0800, "longitude": 50.4700, "timestamp": "2025-01-16T08:00:00Z", "speed": 2.0},
+        {"latitude": 26.0750, "longitude": 50.4650, "timestamp": "2025-01-16T09:00:00Z", "speed": 1.0},
+        {"latitude": 26.0700, "longitude": 50.4700, "timestamp": "2025-01-16T10:00:00Z", "speed": 1.5},
+        {"latitude": 26.0780, "longitude": 50.4750, "timestamp": "2025-01-16T11:00:00Z", "speed": 2.0},
+        {"latitude": 26.0900, "longitude": 50.4850, "timestamp": "2025-01-16T12:00:00Z", "speed": 3.5},
+        {"latitude": 26.1200, "longitude": 50.5100, "timestamp": "2025-01-16T13:00:00Z", "speed": 6.0},
+        {"latitude": 26.1700, "longitude": 50.5500, "timestamp": "2025-01-16T14:00:00Z", "speed": 8.0},
+        {"latitude": 26.2285, "longitude": 50.6050, "timestamp": "2025-01-16T15:00:00Z", "speed": 10.0}
+      ],
+      "events": [
+        {
+          "id": "e006",
+          "vessel_id": "v005",
+          "vessel_name": "Bahrain Star",
+          "event_type": "fishing",
+          "latitude": 26.0800,
+          "longitude": 50.4700,
+          "start_time": "2025-01-16T08:00:00Z",
+          "end_time": "2025-01-16T12:00:00Z",
+          "duration_hours": 4.0
+        }
+      ]
+    },
+    {
+      "vessel_id": "v006",
+      "vessel_name": "Al-Muharraq",
+      "vessel_flag": "BHR",
+      "gear_type": "longline",
+      "positions": [
+        {"latitude": 26.2572, "longitude": 50.6300, "timestamp": "2025-01-16T05:00:00Z", "speed": 8.0},
+        {"latitude": 26.2300, "longitude": 50.6600, "timestamp": "2025-01-16T05:30:00Z", "speed": 7.5},
+        {"latitude": 26.2000, "longitude": 50.7000, "timestamp": "2025-01-16T06:00:00Z", "speed": 7.0},
+        {"latitude": 26.1700, "longitude": 50.7300, "timestamp": "2025-01-16T07:00:00Z", "speed": 4.0},
+        {"latitude": 26.1500, "longitude": 50.7500, "timestamp": "2025-01-16T08:00:00Z", "speed": 2.0},
+        {"latitude": 26.1450, "longitude": 50.7550, "timestamp": "2025-01-16T09:00:00Z", "speed": 1.0},
+        {"latitude": 26.1480, "longitude": 50.7520, "timestamp": "2025-01-16T10:00:00Z", "speed": 1.5},
+        {"latitude": 26.1550, "longitude": 50.7450, "timestamp": "2025-01-16T11:00:00Z", "speed": 2.5},
+        {"latitude": 26.1700, "longitude": 50.7300, "timestamp": "2025-01-16T12:00:00Z", "speed": 5.0},
+        {"latitude": 26.2000, "longitude": 50.7000, "timestamp": "2025-01-16T13:00:00Z", "speed": 7.0},
+        {"latitude": 26.2572, "longitude": 50.6300, "timestamp": "2025-01-16T14:00:00Z", "speed": 8.5}
+      ],
+      "events": [
+        {
+          "id": "e007",
+          "vessel_id": "v006",
+          "vessel_name": "Al-Muharraq",
+          "event_type": "fishing",
+          "latitude": 26.1500,
+          "longitude": 50.7500,
+          "start_time": "2025-01-16T08:00:00Z",
+          "end_time": "2025-01-16T11:00:00Z",
+          "duration_hours": 3.0
+        }
+      ]
+    },
+    {
+      "vessel_id": "v007",
+      "vessel_name": "Hawar Fisher",
+      "vessel_flag": "BHR",
+      "gear_type": "traditional_trap",
+      "positions": [
+        {"latitude": 26.2100, "longitude": 50.6200, "timestamp": "2025-01-17T04:00:00Z", "speed": 9.0},
+        {"latitude": 26.1600, "longitude": 50.5800, "timestamp": "2025-01-17T05:00:00Z", "speed": 8.0},
+        {"latitude": 26.1100, "longitude": 50.5400, "timestamp": "2025-01-17T06:00:00Z", "speed": 7.0},
+        {"latitude": 26.0600, "longitude": 50.5000, "timestamp": "2025-01-17T07:00:00Z", "speed": 6.0},
+        {"latitude": 26.0200, "longitude": 50.4800, "timestamp": "2025-01-17T08:00:00Z", "speed": 3.0},
+        {"latitude": 26.0100, "longitude": 50.4750, "timestamp": "2025-01-17T09:00:00Z", "speed": 1.5},
+        {"latitude": 26.0050, "longitude": 50.4800, "timestamp": "2025-01-17T10:00:00Z", "speed": 1.0},
+        {"latitude": 26.0080, "longitude": 50.4850, "timestamp": "2025-01-17T11:00:00Z", "speed": 1.2},
+        {"latitude": 26.0150, "longitude": 50.4900, "timestamp": "2025-01-17T12:00:00Z", "speed": 2.0},
+        {"latitude": 26.0500, "longitude": 50.5100, "timestamp": "2025-01-17T13:00:00Z", "speed": 6.0},
+        {"latitude": 26.1100, "longitude": 50.5500, "timestamp": "2025-01-17T14:00:00Z", "speed": 8.0},
+        {"latitude": 26.1600, "longitude": 50.5800, "timestamp": "2025-01-17T15:00:00Z", "speed": 8.5},
+        {"latitude": 26.2100, "longitude": 50.6200, "timestamp": "2025-01-17T16:00:00Z", "speed": 9.0}
+      ],
+      "events": [
+        {
+          "id": "e008",
+          "vessel_id": "v007",
+          "vessel_name": "Hawar Fisher",
+          "event_type": "fishing",
+          "latitude": 26.0100,
+          "longitude": 50.4750,
+          "start_time": "2025-01-17T08:30:00Z",
+          "end_time": "2025-01-17T12:00:00Z",
+          "duration_hours": 3.5
+        }
+      ]
+    },
+    {
+      "vessel_id": "v008",
+      "vessel_name": "Gulf Explorer",
+      "vessel_flag": "BHR",
+      "gear_type": "trawler",
+      "positions": [
+        {"latitude": 26.2285, "longitude": 50.6050, "timestamp": "2025-01-17T03:00:00Z", "speed": 10.0},
+        {"latitude": 26.2500, "longitude": 50.6500, "timestamp": "2025-01-17T03:30:00Z", "speed": 9.0},
+        {"latitude": 26.2700, "longitude": 50.7000, "timestamp": "2025-01-17T04:00:00Z", "speed": 8.0},
+        {"latitude": 26.2800, "longitude": 50.7500, "timestamp": "2025-01-17T05:00:00Z", "speed": 5.0},
+        {"latitude": 26.2850, "longitude": 50.7800, "timestamp": "2025-01-17T06:00:00Z", "speed": 3.0},
+        {"latitude": 26.2830, "longitude": 50.7900, "timestamp": "2025-01-17T07:00:00Z", "speed": 1.5},
+        {"latitude": 26.2800, "longitude": 50.7950, "timestamp": "2025-01-17T08:00:00Z", "speed": 1.0},
+        {"latitude": 26.2780, "longitude": 50.7900, "timestamp": "2025-01-17T09:00:00Z", "speed": 1.5},
+        {"latitude": 26.2750, "longitude": 50.7800, "timestamp": "2025-01-17T10:00:00Z", "speed": 2.5},
+        {"latitude": 26.2700, "longitude": 50.7500, "timestamp": "2025-01-17T11:00:00Z", "speed": 5.0},
+        {"latitude": 26.2500, "longitude": 50.7000, "timestamp": "2025-01-17T12:00:00Z", "speed": 7.0},
+        {"latitude": 26.2285, "longitude": 50.6050, "timestamp": "2025-01-17T13:00:00Z", "speed": 9.5}
+      ],
+      "events": [
+        {
+          "id": "e009",
+          "vessel_id": "v008",
+          "vessel_name": "Gulf Explorer",
+          "event_type": "fishing",
+          "latitude": 26.2830,
+          "longitude": 50.7900,
+          "start_time": "2025-01-17T06:30:00Z",
+          "end_time": "2025-01-17T10:00:00Z",
+          "duration_hours": 3.5
+        }
+      ]
+    },
+    {
+      "vessel_id": "v009",
+      "vessel_name": "Sea Breeze",
+      "vessel_flag": "KWT",
+      "gear_type": "longline",
+      "positions": [
+        {"latitude": 26.3000, "longitude": 50.5000, "timestamp": "2025-01-17T05:00:00Z", "speed": 8.0},
+        {"latitude": 26.2500, "longitude": 50.5300, "timestamp": "2025-01-17T06:00:00Z", "speed": 6.0},
+        {"latitude": 26.2000, "longitude": 50.5600, "timestamp": "2025-01-17T07:00:00Z", "speed": 4.0},
+        {"latitude": 26.1800, "longitude": 50.5500, "timestamp": "2025-01-17T08:00:00Z", "speed": 2.0},
+        {"latitude": 26.1750, "longitude": 50.5480, "timestamp": "2025-01-17T09:00:00Z", "speed": 1.0},
+        {"latitude": 26.1780, "longitude": 50.5520, "timestamp": "2025-01-17T10:00:00Z", "speed": 1.5},
+        {"latitude": 26.1850, "longitude": 50.5600, "timestamp": "2025-01-17T11:00:00Z", "speed": 3.0},
+        {"latitude": 26.2200, "longitude": 50.5400, "timestamp": "2025-01-17T12:00:00Z", "speed": 6.0},
+        {"latitude": 26.3000, "longitude": 50.5000, "timestamp": "2025-01-17T13:00:00Z", "speed": 8.5}
+      ],
+      "events": [
+        {
+          "id": "e010",
+          "vessel_id": "v009",
+          "vessel_name": "Sea Breeze",
+          "event_type": "fishing",
+          "latitude": 26.1800,
+          "longitude": 50.5500,
+          "start_time": "2025-01-17T08:00:00Z",
+          "end_time": "2025-01-17T11:00:00Z",
+          "duration_hours": 3.0
+        }
+      ]
+    },
+    {
+      "vessel_id": "v010",
+      "vessel_name": "Al-Dana",
+      "vessel_flag": "BHR",
+      "gear_type": "traditional_trap",
+      "positions": [
+        {"latitude": 26.2100, "longitude": 50.6200, "timestamp": "2025-01-17T05:00:00Z", "speed": 7.5},
+        {"latitude": 26.2200, "longitude": 50.6400, "timestamp": "2025-01-17T05:30:00Z", "speed": 7.0},
+        {"latitude": 26.2300, "longitude": 50.6700, "timestamp": "2025-01-17T06:00:00Z", "speed": 6.0},
+        {"latitude": 26.2350, "longitude": 50.7000, "timestamp": "2025-01-17T07:00:00Z", "speed": 4.0},
+        {"latitude": 26.2300, "longitude": 50.7200, "timestamp": "2025-01-17T08:00:00Z", "speed": 2.0},
+        {"latitude": 26.2280, "longitude": 50.7250, "timestamp": "2025-01-17T09:00:00Z", "speed": 1.0},
+        {"latitude": 26.2300, "longitude": 50.7200, "timestamp": "2025-01-17T10:00:00Z", "speed": 1.5},
+        {"latitude": 26.2350, "longitude": 50.7100, "timestamp": "2025-01-17T11:00:00Z", "speed": 3.0},
+        {"latitude": 26.2300, "longitude": 50.6800, "timestamp": "2025-01-17T12:00:00Z", "speed": 5.0},
+        {"latitude": 26.2100, "longitude": 50.6200, "timestamp": "2025-01-17T13:00:00Z", "speed": 8.0}
+      ],
+      "events": [
+        {
+          "id": "e011",
+          "vessel_id": "v010",
+          "vessel_name": "Al-Dana",
+          "event_type": "fishing",
+          "latitude": 26.2300,
+          "longitude": 50.7200,
+          "start_time": "2025-01-17T08:00:00Z",
+          "end_time": "2025-01-17T10:30:00Z",
+          "duration_hours": 2.5
+        },
+        {
+          "id": "e012",
+          "vessel_id": "v010",
+          "vessel_name": "Al-Dana",
+          "event_type": "port_visit",
+          "latitude": 26.2100,
+          "longitude": 50.6200,
+          "start_time": "2025-01-17T13:00:00Z",
+          "end_time": "2025-01-17T14:00:00Z",
+          "duration_hours": 1.0
+        }
+      ]
+    }
+  ]
+}
